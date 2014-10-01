@@ -27,31 +27,25 @@ import setuptools
 REQUIRED_PACKAGES = [
     'ez_setup==0.9',
     ]
-CONSOLE_SCRIPTS = [
-    'gen_protorpc = gen_protorpc:main',
-    ]
 
 py_version = platform.python_version()
 if py_version < '2.6':
   REQUIRED_PACKAGES.append('simplejson')
 
-_PROTORPC_VERSION = '0.9.1'
+_PROTOPY_VERSION = '0.9.1'
 
 setuptools.setup(
-    name='protorpc',
-    version=_PROTORPC_VERSION,
-    description='Google Protocol RPC',
-    url='http://code.google.com/p/google-protorpc/',
-    author='Google Inc.',
-    author_email='rafek@google.com',
+    name='protopy',
+    version=_PROTOPY_VERSION,
+    description='Library to define data contracts for JSON',
+    url='https://github.com/Docalytics/protopy',
+    author='Docalytics Inc',
+    author_email='ryan.morlok@morlok.com.com',
     # Contained modules and scripts.
     packages=setuptools.find_packages(),
-    entry_points={
-        'console_scripts': CONSOLE_SCRIPTS,
-        },
     install_requires=REQUIRED_PACKAGES,
     provides=[
-        'protorpc (%s)' % (_PROTORPC_VERSION,),
+        'protopy (%s)' % (_PROTOPY_VERSION,),
         ],
     # PyPI package information.
     classifiers=[
@@ -65,5 +59,5 @@ setuptools.setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
         ],
     license='Apache 2.0',
-    keywords='google protocol rpc',
+    keywords='protocol json',
     )
