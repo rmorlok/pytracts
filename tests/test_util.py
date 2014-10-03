@@ -38,9 +38,9 @@ import socket
 import types
 import unittest
 
-from . import message_types
-from . import messages
-from . import util
+from protopy import message_types
+from protopy import messages
+from protopy import util
 
 # Unicode of the word "Russian" in cyrillic.
 RUSSIAN = u'\u0440\u0443\u0441\u0441\u043a\u0438\u0439'

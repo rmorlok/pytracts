@@ -16,12 +16,10 @@
 #
 
 """Tests for protopy.protojson."""
+from tests import test_util
 
 __author__ = 'rafek@google.com (Rafe Kaplan)'
 
-
-import __builtin__
-import base64
 import datetime
 import sys
 import unittest
@@ -29,7 +27,6 @@ import unittest
 from protopy import message_types
 from protopy import messages
 from protopy import protojson
-from protopy import test_util
 
 import json
 

@@ -16,6 +16,7 @@
 #
 
 """Tests for protopy.util."""
+from tests import test_util
 
 __author__ = 'rafek@google.com (Rafe Kaplan)'
 
@@ -26,7 +27,6 @@ import random
 import sys
 import unittest
 
-from protopy import test_util
 from protopy import util
 
 

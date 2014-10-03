@@ -16,21 +16,17 @@
 #
 
 """Tests for protopy.messages."""
+from tests import test_util
 
 __author__ = 'rafek@google.com (Rafe Kaplan)'
 
-
-import imp
-import inspect
 import new
 import re
 import sys
-import types
 import unittest
 
 from protopy import message_types
 from protopy import messages
-from protopy import test_util
 
 
 class ModuleInterfaceTest(test_util.ModuleInterfaceTest,

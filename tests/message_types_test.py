@@ -16,6 +16,7 @@
 #
 
 """Tests for protopy.message_types."""
+from tests import test_util
 
 __author__ = 'rafek@google.com (Rafe Kaplan)'
 
@@ -26,7 +27,6 @@ import unittest
 
 from protopy import message_types
 from protopy import messages
-from protopy import test_util
 from protopy import util
 
 

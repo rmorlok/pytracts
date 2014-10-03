@@ -16,19 +16,18 @@
 #
 
 """Tests for protopy.protourlencode."""
+from tests import test_util
 
 __author__ = 'rafek@google.com (Rafe Kaplan)'
 
 
 import cgi
-import logging
 import unittest
 import urllib
 
 from protopy import message_types
 from protopy import messages
 from protopy import protourlencode
-from protopy import test_util
 
 
 class ModuleInterfaceTest(test_util.ModuleInterfaceTest,
