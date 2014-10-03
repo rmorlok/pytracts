@@ -32,7 +32,7 @@ py_version = platform.python_version()
 if py_version < '2.6':
   REQUIRED_PACKAGES.append('simplejson')
 
-_PROTOPY_VERSION = '0.9.1'
+_PROTOPY_VERSION = '0.1.0'
 
 setuptools.setup(
     name='protopy',

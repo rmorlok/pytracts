@@ -31,7 +31,7 @@ from protopy import messages
 from protopy import protojson
 from protopy import test_util
 
-import simplejson
+import json
 
 
 class CustomField(messages.MessageField):
@@ -89,8 +89,8 @@ class ProtojsonTest(test_util.TestCase,
 
   def CompareEncoded(self, expected_encoded, actual_encoded):
     """JSON encoding will be laundered to remove string differences."""
-    self.assertEquals(simplejson.loads(expected_encoded),
-                      simplejson.loads(actual_encoded))
+    self.assertEquals(json.loads(expected_encoded),
+                      json.loads(actual_encoded))
 
   encoded_empty_message = '{}'
 
@@ -495,7 +495,7 @@ class TestJsonDependencyLoading(test_util.TestCase):
     # Bad module without simplejson back raises errors.
     self.assertRaisesWithRegexpMatch(
         ImportError,
-        'json library "json" is not compatible with ProtoRPC',
+        'json library "json" is not compatible with ProtoPy',
         reload,
         protojson)
 

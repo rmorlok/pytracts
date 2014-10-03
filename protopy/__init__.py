@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-"""Main module for ProtoRPC package."""
+"""Main module for ProtoPy package."""
 
 __author__ = 'rafek@google.com (Rafe Kaplan)'
 __version__ = '1.0'

@@ -419,7 +419,7 @@ class TimeZoneOffset(datetime.tzinfo):
   def dst(self, dt):
     """Get the daylight savings time offset.
 
-    The formats that ProtoRPC uses to encode/decode time zone information don't
+    The formats that ProtoPy uses to encode/decode time zone information don't
     contain any information about daylight savings time.  So this always
     returns a timedelta of 0.
 

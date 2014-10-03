@@ -58,7 +58,7 @@ def _load_json_module():
 
   Raises:
     ImportError if there are no json modules or the loaded json module is
-      not compatible with ProtoRPC.
+      not compatible with ProtoPy.
   """
   first_import_error = None
   for module_name in ['json',
@@ -66,7 +66,7 @@ def _load_json_module():
     try:
       module = __import__(module_name, {}, {}, 'json')
       if not hasattr(module, 'JSONEncoder'):
-        message = ('json library "%s" is not compatible with ProtoRPC' %
+        message = ('json library "%s" is not compatible with ProtoPy' %
                    module_name)
         logging.warning(message)
         raise ImportError(message)
@@ -125,7 +125,7 @@ class MessageJSONEncoder(json.JSONEncoder):
 
 
 class ProtoJson(object):
-  """ProtoRPC JSON implementation class.
+  """ProtoPy JSON implementation class.
 
   Implementation of JSON based protocol used for serializing and deserializing
   message objects.  Instances of remote.ProtocolConfig constructor or used with
@@ -145,7 +145,7 @@ class ProtoJson(object):
     """Encode a python field value to a JSON value.
 
     Args:
-      field: A ProtoRPC field instance.
+      field: A ProtoPy field instance.
       value: A python value supported by field.
 
     Returns:
@@ -289,7 +289,7 @@ class ProtoJson(object):
     """Decode a JSON value to a python value.
 
     Args:
-      field: A ProtoRPC field instance.
+      field: A ProtoPy field instance.
       value: A serialized JSON value.
 
     Return:

@@ -28,7 +28,6 @@ import sys
 import types
 import unittest
 
-from protopy import descriptor
 from protopy import message_types
 from protopy import messages
 from protopy import test_util
@@ -612,52 +611,6 @@ class FieldTest(test_util.TestCase):
 
     self.assertEquals(Symbol.ALPHA, field.default)
 
-  def testDefaultFields_EnumStringDelayedResolution(self):
-    """Test that enum fields resolve default strings."""
-    field = messages.EnumField('protopy.descriptor.FieldDescriptor.Label',
-                               1,
-                               default='OPTIONAL')
-
-    self.assertEquals(descriptor.FieldDescriptor.Label.OPTIONAL, field.default)
-
-  def testDefaultFields_EnumIntDelayedResolution(self):
-    """Test that enum fields resolve default integers."""
-    field = messages.EnumField('protopy.descriptor.FieldDescriptor.Label',
-                               1,
-                               default=2)
-
-    self.assertEquals(descriptor.FieldDescriptor.Label.REQUIRED, field.default)
-
-  def testDefaultFields_EnumOkIfTypeKnown(self):
-    """Test that enum fields accept valid default values when type is known."""
-    field = messages.EnumField(descriptor.FieldDescriptor.Label,
-                               1,
-                               default='REPEATED')
-
-    self.assertEquals(descriptor.FieldDescriptor.Label.REPEATED, field.default)
-
-  def testDefaultFields_EnumForceCheckIfTypeKnown(self):
-    """Test that enum fields validate default values if type is known."""
-    self.assertRaisesWithRegexpMatch(TypeError,
-                                     'No such value for NOT_A_LABEL in '
-                                     'Enum Label',
-                                     messages.EnumField,
-                                     descriptor.FieldDescriptor.Label,
-                                     1,
-                                     default='NOT_A_LABEL')
-
-  def testDefaultFields_EnumInvalidDelayedResolution(self):
-    """Test that enum fields raise errors upon delayed resolution error."""
-    field = messages.EnumField('protopy.descriptor.FieldDescriptor.Label',
-                               1,
-                               default=200)
-
-    self.assertRaisesWithRegexpMatch(TypeError,
-                                     'No such value for 200 in Enum Label',
-                                     getattr,
-                                     field,
-                                     'default')
-
   def testValidate_Valid(self):
     """Test validation of valid values."""
     values = {messages.IntegerField: 10,
@@ -769,10 +722,10 @@ class FieldTest(test_util.TestCase):
 
       # Repeated.
       field = field_class(1, repeated=True)
-      self.assertRaises(message.VAlidationError,
+      self.assertRaises(messages.ValidationError,
                         field.validate_element,
                         [])
-      self.assertRaises(message.VAlidationError,
+      self.assertRaises(messages.ValidationError,
                         field.validate_element,
                         ())
       field.validate_element(values[field_class])
@@ -2004,15 +1957,13 @@ class FindDefinitionTest(test_util.TestCase):
     self.assertEquals(A, messages.find_definition(
         'a.A', None, importer=self.Importer))
 
-
-class FindDefinitionUnicodeTests(test_util.TestCase):
-
   def testUnicodeString(self):
-    """Test using unicode names."""
-    self.assertEquals('ServiceMapping',
-                      messages.find_definition(
-                        u'protopy.registry.ServiceMapping',
-                        None).__name__)
+    """Make sure not faked out by module, but continues searching."""
+    A = self.DefineMessage('a', 'A')
+    module_A = self.DefineModule('a.A')
+
+    self.assertEquals(A, messages.find_definition(
+        u'a.A', None, importer=self.Importer))
 
 
 def main():
