@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright 2010 Google Inc.
+# Copyright 2014 Docalytics Inc, Copyright 2010 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-"""Tests for protorpc.protourlencode."""
+"""Tests for protopy.protourlencode."""
 
 __author__ = 'rafek@google.com (Rafe Kaplan)'
 
@@ -25,10 +25,10 @@ import logging
 import unittest
 import urllib
 
-from protorpc import message_types
-from protorpc import messages
-from protorpc import protourlencode
-from protorpc import test_util
+from protopy import message_types
+from protopy import messages
+from protopy import protourlencode
+from protopy import test_util
 
 
 class ModuleInterfaceTest(test_util.ModuleInterfaceTest,

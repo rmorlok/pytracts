@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright 2010 Google Inc.
+# Copyright 2014 Docalytics Inc, Copyright 2010 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -238,7 +238,7 @@ class MessageDescriptor(messages.Message):
   fields = messages.MessageField(FieldDescriptor, 2, repeated=True)
 
   message_types = messages.MessageField(
-    'protorpc.descriptor.MessageDescriptor', 3, repeated=True)
+    'protopy.descriptor.MessageDescriptor', 3, repeated=True)
   enum_types = messages.MessageField(EnumDescriptor, 4, repeated=True)
 
 

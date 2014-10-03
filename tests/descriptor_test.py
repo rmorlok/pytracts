@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright 2010 Google Inc.
+# Copyright 2014 Docalytics Inc, Copyright 2010 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-"""Tests for protorpc.descriptor."""
+"""Tests for protopy.descriptor."""
 
 __author__ = 'rafek@google.com (Rafe Kaplan)'
 
@@ -23,12 +23,12 @@ __author__ = 'rafek@google.com (Rafe Kaplan)'
 import new
 import unittest
 
-from protorpc import descriptor
-from protorpc import message_types
-from protorpc import messages
-from protorpc import registry
-from protorpc import remote
-from protorpc import test_util
+from protopy import descriptor
+from protopy import message_types
+from protopy import messages
+from protopy import registry
+from protopy import remote
+from protopy import test_util
 
 
 RUSSIA = u'\u0420\u043e\u0441\u0441\u0438\u044f'
@@ -181,7 +181,7 @@ class DescribeFieldTest(test_util.TestCase):
     expected.number = 10
     expected.label = descriptor.FieldDescriptor.Label.OPTIONAL
     expected.variant = messages.MessageField.DEFAULT_VARIANT
-    expected.type_name = ('protorpc.descriptor.FieldDescriptor')
+    expected.type_name = ('protopy.descriptor.FieldDescriptor')
 
     described = descriptor.describe_field(field)
     described.check_initialized()
@@ -196,7 +196,7 @@ class DescribeFieldTest(test_util.TestCase):
     expected.number = 20
     expected.label = descriptor.FieldDescriptor.Label.OPTIONAL
     expected.variant = messages.MessageField.DEFAULT_VARIANT
-    expected.type_name = ('protorpc.message_types.DateTimeMessage')
+    expected.type_name = ('protopy.message_types.DateTimeMessage')
 
     described = descriptor.describe_field(field)
     described.check_initialized()
@@ -557,42 +557,42 @@ class ModuleFinderTest(test_util.TestCase):
 
   def testFindModule(self):
     self.assertEquals(descriptor.describe_file(registry),
-                      descriptor.import_descriptor_loader('protorpc.registry'))
+                      descriptor.import_descriptor_loader('protopy.registry'))
 
   def testFindMessage(self):
     self.assertEquals(
       descriptor.describe_message(descriptor.FileSet),
-      descriptor.import_descriptor_loader('protorpc.descriptor.FileSet'))
+      descriptor.import_descriptor_loader('protopy.descriptor.FileSet'))
 
   def testFindField(self):
     self.assertEquals(
       descriptor.describe_field(descriptor.FileSet.files),
-      descriptor.import_descriptor_loader('protorpc.descriptor.FileSet.files'))
+      descriptor.import_descriptor_loader('protopy.descriptor.FileSet.files'))
 
   def testFindEnumValue(self):
     self.assertEquals(
       descriptor.describe_enum_value(test_util.OptionalMessage.SimpleEnum.VAL1),
       descriptor.import_descriptor_loader(
-        'protorpc.test_util.OptionalMessage.SimpleEnum.VAL1'))
+        'protopy.test_util.OptionalMessage.SimpleEnum.VAL1'))
 
   def testFindMethod(self):
     self.assertEquals(
       descriptor.describe_method(registry.RegistryService.services),
       descriptor.import_descriptor_loader(
-        'protorpc.registry.RegistryService.services'))
+        'protopy.registry.RegistryService.services'))
 
   def testFindService(self):
     self.assertEquals(
       descriptor.describe_service(registry.RegistryService),
-      descriptor.import_descriptor_loader('protorpc.registry.RegistryService'))
+      descriptor.import_descriptor_loader('protopy.registry.RegistryService'))
 
   def testFindWithAbsoluteName(self):
     self.assertEquals(
       descriptor.describe_service(registry.RegistryService),
-      descriptor.import_descriptor_loader('.protorpc.registry.RegistryService'))
+      descriptor.import_descriptor_loader('.protopy.registry.RegistryService'))
 
   def testFindWrongThings(self):
-    for name in ('a', 'protorpc.registry.RegistryService.__init__', '', ):
+    for name in ('a', 'protopy.registry.RegistryService.__init__', '', ):
       self.assertRaisesWithRegexpMatch(
         messages.DefinitionNotFoundError,
         'Could not find definition for %s' % name,
@@ -612,21 +612,21 @@ class DescriptorLibraryTest(test_util.TestCase):
 
   def testLookupPackage(self):
     self.assertEquals('csv', self.library.lookup_package('csv'))
-    self.assertEquals('protorpc', self.library.lookup_package('protorpc'))
-    self.assertEquals('protorpc.registry',
-                      self.library.lookup_package('protorpc.registry'))
-    self.assertEquals('protorpc.registry',
-                      self.library.lookup_package('.protorpc.registry'))
+    self.assertEquals('protopy', self.library.lookup_package('protopy'))
+    self.assertEquals('protopy.registry',
+                      self.library.lookup_package('protopy.registry'))
+    self.assertEquals('protopy.registry',
+                      self.library.lookup_package('.protopy.registry'))
     self.assertEquals(
-      'protorpc.registry',
-      self.library.lookup_package('protorpc.registry.RegistryService'))
+      'protopy.registry',
+      self.library.lookup_package('protopy.registry.RegistryService'))
     self.assertEquals(
-      'protorpc.registry',
+      'protopy.registry',
       self.library.lookup_package(
-        'protorpc.registry.RegistryService.services'))
+        'protopy.registry.RegistryService.services'))
 
   def testLookupNonPackages(self):
-    for name in ('', 'a', 'protorpc.descriptor.DescriptorLibrary'):
+    for name in ('', 'a', 'protopy.descriptor.DescriptorLibrary'):
       self.assertRaisesWithRegexpMatch(
         messages.DefinitionNotFoundError,
         'Could not find definition for %s' % name,

@@ -1,6 +1,6 @@
 """Dynamically decide from where to import other non SDK Google modules.
 
-All other protorpc code should import other non SDK modules from
+All other protopy code should import other non SDK modules from
 this module. If necessary, add new imports here (in both places).
 """
 

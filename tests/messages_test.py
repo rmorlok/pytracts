@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright 2010 Google Inc.
+# Copyright 2014 Docalytics Inc, Copyright 2010 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-"""Tests for protorpc.messages."""
+"""Tests for protopy.messages."""
 
 __author__ = 'rafek@google.com (Rafe Kaplan)'
 
@@ -28,10 +28,10 @@ import sys
 import types
 import unittest
 
-from protorpc import descriptor
-from protorpc import message_types
-from protorpc import messages
-from protorpc import test_util
+from protopy import descriptor
+from protopy import message_types
+from protopy import messages
+from protopy import test_util
 
 
 class ModuleInterfaceTest(test_util.ModuleInterfaceTest,
@@ -614,7 +614,7 @@ class FieldTest(test_util.TestCase):
 
   def testDefaultFields_EnumStringDelayedResolution(self):
     """Test that enum fields resolve default strings."""
-    field = messages.EnumField('protorpc.descriptor.FieldDescriptor.Label',
+    field = messages.EnumField('protopy.descriptor.FieldDescriptor.Label',
                                1,
                                default='OPTIONAL')
 
@@ -622,7 +622,7 @@ class FieldTest(test_util.TestCase):
 
   def testDefaultFields_EnumIntDelayedResolution(self):
     """Test that enum fields resolve default integers."""
-    field = messages.EnumField('protorpc.descriptor.FieldDescriptor.Label',
+    field = messages.EnumField('protopy.descriptor.FieldDescriptor.Label',
                                1,
                                default=2)
 
@@ -648,7 +648,7 @@ class FieldTest(test_util.TestCase):
 
   def testDefaultFields_EnumInvalidDelayedResolution(self):
     """Test that enum fields raise errors upon delayed resolution error."""
-    field = messages.EnumField('protorpc.descriptor.FieldDescriptor.Label',
+    field = messages.EnumField('protopy.descriptor.FieldDescriptor.Label',
                                1,
                                default=200)
 
@@ -2011,7 +2011,7 @@ class FindDefinitionUnicodeTests(test_util.TestCase):
     """Test using unicode names."""
     self.assertEquals('ServiceMapping',
                       messages.find_definition(
-                        u'protorpc.registry.ServiceMapping',
+                        u'protopy.registry.ServiceMapping',
                         None).__name__)
 
 

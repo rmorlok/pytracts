@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright 2010 Google Inc.
+# Copyright 2014 Docalytics Inc, Copyright 2010 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,14 +21,14 @@ import os
 import socket
 import unittest
 
-from protorpc import messages
-from protorpc import protobuf
-from protorpc import protojson
-from protorpc import remote
-from protorpc import test_util
-from protorpc import transport
-from protorpc import webapp_test_util
-from protorpc.wsgi import util as wsgi_util
+from protopy import messages
+from protopy import protobuf
+from protopy import protojson
+from protopy import remote
+from protopy import test_util
+from protopy import transport
+from protopy import webapp_test_util
+from protopy.wsgi import util as wsgi_util
 
 import mox
 

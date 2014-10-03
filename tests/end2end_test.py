@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright 2011 Google Inc.
+# Copyright 2014 Docalytics Inc, Copyright 2011 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -22,11 +22,11 @@ __author__ = 'rafek@google.com (Rafe Kaplan)'
 
 import unittest
 
-from protorpc import protojson
-from protorpc import remote
-from protorpc import test_util
-from protorpc import util
-from protorpc import webapp_test_util
+from protopy import protojson
+from protopy import remote
+from protopy import test_util
+from protopy import util
+from protopy import webapp_test_util
 
 package = 'test_package'
 
@@ -81,9 +81,9 @@ class EndToEndTest(webapp_test_util.EndToEndTestBase):
     self.assertEquals(405, code)
     self.assertEquals(
       util.pad_string('/my/service.optional_message is a ProtoRPC method.\n\n'
-                      'Service protorpc.webapp_test_util.TestService\n\n'
+                      'Service protopy.webapp_test_util.TestService\n\n'
                       'More about ProtoRPC: '
-                      'http://code.google.com/p/google-protorpc\n'),
+                      'https://github.com/Docalytics/protopy\n'),
       content)
     self.assertEquals(headers['content-type'], 'text/plain; charset=utf-8')
 

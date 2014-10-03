@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright 2010 Google Inc.
+# Copyright 2014 Docalytics Inc, Copyright 2010 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-"""Tests for protorpc.remote."""
+"""Tests for protopy.remote."""
 
 __author__ = 'rafek@google.com (Rafe Kaplan)'
 
@@ -25,14 +25,14 @@ import types
 import unittest
 from wsgiref import headers
 
-from protorpc import descriptor
-from protorpc import message_types
-from protorpc import messages
-from protorpc import protobuf
-from protorpc import protojson
-from protorpc import remote
-from protorpc import test_util
-from protorpc import transport
+from protopy import descriptor
+from protopy import message_types
+from protopy import messages
+from protopy import protobuf
+from protopy import protojson
+from protopy import remote
+from protopy import test_util
+from protopy import transport
 
 import mox
 

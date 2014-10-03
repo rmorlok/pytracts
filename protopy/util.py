@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright 2010 Google Inc.
+# Copyright 2014 Docalytics Inc, Copyright 2010 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -45,14 +45,14 @@ __all__ = ['AcceptItem',
 
 
 class Error(Exception):
-  """Base class for protorpc exceptions."""
+  """Base class for protopy exceptions."""
 
 
 class AcceptError(Error):
   """Raised when there is an error parsing the accept header."""
 
 
-PROTORPC_PROJECT_URL = 'http://code.google.com/p/google-protorpc'
+PROTORPC_PROJECT_URL = 'https://github.com/Docalytics/protopy'
 
 _TIME_ZONE_RE_STRING = r"""
   # Examples:

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright 2010 Google Inc.
+# Copyright 2014 Docalytics Inc, Copyright 2010 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-"""Tests for protorpc.stub."""
+"""Tests for protopy.stub."""
 
 __author__ = 'rafek@google.com (Rafe Kaplan)'
 
@@ -25,13 +25,13 @@ import StringIO
 import sys
 import unittest
 
-from protorpc import definition
-from protorpc import descriptor
-from protorpc import message_types
-from protorpc import messages
-from protorpc import protobuf
-from protorpc import remote
-from protorpc import test_util
+from protopy import definition
+from protopy import descriptor
+from protopy import message_types
+from protopy import messages
+from protopy import protobuf
+from protopy import remote
+from protopy import test_util
 
 import mox
 
@@ -177,7 +177,7 @@ class DefineFieldTest(test_util.TestCase):
     field_descriptor.name = 'a_timestamp'
     field_descriptor.number = 1
     field_descriptor.variant = descriptor.FieldDescriptor.Variant.MESSAGE
-    field_descriptor.type_name = 'protorpc.message_types.DateTimeMessage'
+    field_descriptor.type_name = 'protopy.message_types.DateTimeMessage'
     field_descriptor.label = descriptor.FieldDescriptor.Label.REPEATED
 
     field = definition.define_field(field_descriptor)
@@ -634,7 +634,7 @@ class ModuleTest(test_util.TestCase):
     modules = {
         'root': root,
         'root.nested': nested,
-        'protorpc.descriptor': descriptor,
+        'protopy.descriptor': descriptor,
     }
 
     definition.import_file_set(file_set, modules=modules)
@@ -642,14 +642,14 @@ class ModuleTest(test_util.TestCase):
     self.assertEquals(root, modules['root'])
     self.assertEquals(nested, modules['root.nested'])
     self.assertEquals(nested.nested, modules['root.nested.nested'])
-    self.assertEquals(descriptor, modules['protorpc.descriptor'])
+    self.assertEquals(descriptor, modules['protopy.descriptor'])
 
     self.assertEquals(file_set,
                       descriptor.describe_file_set(
                           [modules['standalone'],
                            modules['root.nested'],
                            modules['root.nested.nested'],
-                           modules['protorpc.descriptor'],
+                           modules['protopy.descriptor'],
                           ]))
 
 

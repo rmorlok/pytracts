@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright 2010 Google Inc.
+# Copyright 2014 Docalytics Inc, Copyright 2010 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-"""Tests for protorpc.message."""
+"""Tests for protopy.message."""
 
 __author__ = 'rafek@google.com (Rafe Kaplan)'
 
@@ -23,12 +23,12 @@ __author__ = 'rafek@google.com (Rafe Kaplan)'
 import sys
 import unittest
 
-from protorpc import descriptor
-from protorpc import message_types
-from protorpc import messages
-from protorpc import registry
-from protorpc import remote
-from protorpc import test_util
+from protopy import descriptor
+from protopy import message_types
+from protopy import messages
+from protopy import registry
+from protopy import remote
+from protopy import test_util
 
 
 class ModuleInterfaceTest(test_util.ModuleInterfaceTest,

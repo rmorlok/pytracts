@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 #
-# Copyright 2010 Google Inc.
+# Copyright 2014 Docalytics Inc, Copyright 2010 Google Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -285,6 +285,6 @@ def import_file_set(file_set, modules=None, _open=open):
     file_set = protobuf.decode_message(descriptor.FileSet, encoded_file_set)
 
   for file_descriptor in file_set.files:
-    # Do not reload built in protorpc classes.
-    if not file_descriptor.package.startswith('protorpc.'):
+    # Do not reload built in protopy classes.
+    if not file_descriptor.package.startswith('protopy.'):
       import_file(file_descriptor, modules=modules)
