@@ -1007,7 +1007,7 @@ class FieldTest(test_util.TestCase):
                           MyMessage.field_by_name('my_field').message_definition())
 
     def testNoneAssignment(self):
-        """Test that assigning None does not change comparison."""
+        """Test that assigning None does changes comparison."""
 
         class MyMessage(messages.Message):
             my_field = messages.StringField()
@@ -1015,7 +1015,7 @@ class FieldTest(test_util.TestCase):
         m1 = MyMessage()
         m2 = MyMessage()
         m2.my_field = None
-        self.assertEquals(m1, m2)
+        self.assertNotEquals(m1, m2)
 
     def testNonAsciiStr(self):
         """Test validation fails for non-ascii StringField values."""

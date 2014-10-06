@@ -149,6 +149,7 @@ _RESERVED_ATTRIBUTE_NAMES = frozenset(
 
 _POST_INIT_FIELD_ATTRIBUTE_NAMES = frozenset(
     ['name',
+     'alias',
      '_message_definition',
      '_MessageField__type',
      '_EnumField__type',
@@ -553,6 +554,7 @@ class _MessageClass(_DefinitionClass):
         allow the translation of Field instances to slots.
         """
         by_name = {}
+        by_alias = {}
 
         variant_map = {}
 
@@ -595,10 +597,12 @@ class _MessageClass(_DefinitionClass):
                         'Field with name %d declared more than once in %s' %
                         (field.name, name))
 
-                field.name = key
+                # Record the name used in code
+                field.alias = key
 
                 # Place in name map
-                by_name[key] = field
+                by_name[field.name] = field
+                by_alias[field.alias] = field
 
             # Add enums if any exist.
             if enums:
@@ -609,6 +613,7 @@ class _MessageClass(_DefinitionClass):
                 dct['__messages__'] = sorted(messages)
 
         dct['_Message__by_name'] = by_name
+        dct['_Message__by_alias'] = by_alias
 
         return _DefinitionClass.__new__(cls, name, bases, dct)
 
@@ -694,8 +699,11 @@ class Message(object):
 
     __metaclass__ = _MessageClass
 
-    # Mapping of names to fields
+    # Mapping of names (actual value that's used for encoding) to fields
     __by_name = {}
+
+    # Mapping of aliases (the name that used in python code) to fields
+    __by_alias = {}
 
     def __init__(self, **kwargs):
         """Initialize internal messages state.
@@ -736,7 +744,6 @@ class Message(object):
             if field.repeated and field.name not in assigned:
                 setattr(self, field.name, [])
 
-
     def check_initialized(self):
         """Check class for initialization status.
 
@@ -746,11 +753,11 @@ class Message(object):
           ValidationError: If message is not initialized.
         """
         for name, field in self.__by_name.iteritems():
-            value = getattr(self, name)
+            value = getattr(self, field.alias)
             if value is None:
                 if field.required:
                     raise ValidationError("Message %s is missing required field %s" %
-                                          (type(self).__name__, name))
+                                          (type(self).__name__, field.alias))
             else:
                 try:
                     if (isinstance(field, MessageField) and
@@ -906,7 +913,7 @@ class Message(object):
             raise TypeError('Variant type %s is not valid.' % variant)
         self.__unrecognized_fields[key] = value, variant
 
-    def __setattr__(self, name, value):
+    def __setattr__(self, alias, value):
         """Change set behavior for messages.
 
         Messages may only be assigned values that are fields.
@@ -920,11 +927,11 @@ class Message(object):
         Raises:
           AttributeError when trying to assign value that is not a field.
         """
-        if name in self.__by_name or name.startswith('_Message__'):
-            object.__setattr__(self, name, value)
+        if alias in self.__by_alias or alias.startswith('_Message__'):
+            object.__setattr__(self, alias, value)
         else:
             raise AttributeError("May not assign arbitrary value %s "
-                                 "to message %s" % (name, type(self).__name__))
+                                 "to message %s" % (alias, type(self).__name__))
 
     def __repr__(self):
         """Make string representation of message.
@@ -1123,8 +1130,12 @@ class Field(object):
                 'Invalid variant: %s\nValid variants for %s are %r' %
                 (variant, type(self).__name__, sorted(self.VARIANTS)))
 
+        # The name used in encoding
         if name:
             self.name = name
+
+        # The name used in code
+        self.alias = None
 
         self.required = required
         self.repeated = repeated
@@ -1174,16 +1185,16 @@ class Field(object):
           value: Value to set on message.
         """
         # Reaches in to message instance directly to assign to private tags.
-        if value is None:
-            if self.repeated:
+        if value is None and self.repeated:
                 raise ValidationError(
                     'May not assign None to repeated field %s' % self.name)
+
+        if self.repeated:
+            value = FieldList(self, value)
         else:
-            if self.repeated:
-                value = FieldList(self, value)
-            else:
-                self.validate(value)
-            message_instance._Message__field_values[self.name] = value
+            self.validate(value)
+
+        message_instance._Message__field_values[self.name] = value
 
     def __get__(self, message_instance, message_class):
         if message_instance is None:

@@ -276,9 +276,9 @@ class ProtoJson(object):
 
             if field.repeated:
                 existing_value = getattr(message, field.name)
-                setattr(message, field.name, valid_value)
+                setattr(message, field.alias, valid_value)
             else:
-                setattr(message, field.name, valid_value[-1])
+                setattr(message, field.alias, valid_value[-1])
 
         return message
 

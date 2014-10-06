@@ -198,7 +198,11 @@ class ProtojsonTest(test_util.TestCase,
 
     def testNullValues(self):
         """Test that null values overwrite existing values."""
-        self.assertEquals(MyMessage(),
+        m = MyMessage()
+        m.an_integer = None
+        m.a_nested = None
+
+        self.assertEquals(m,
                           protojson.decode_message(MyMessage,
                                                    ('{"an_integer": null,'
                                                     ' "a_nested": null'
@@ -359,7 +363,6 @@ class ProtojsonTest(test_util.TestCase,
             test_util.OptionalMessage,
             '{"bytes_value": "abcdefghijklmnopq"}')
 
-    """
     def test_has_value_assigned(self):
         class Foo(messages.Message):
             not_set = messages.StringField()
@@ -369,7 +372,36 @@ class ProtojsonTest(test_util.TestCase,
         self.assertFalse(message.has_value_assigned('not_set'))
         self.assertTrue(message.has_value_assigned('set_null'))
         self.assertIsNone(message.not_set)
-        self.assertIsNone(message.set_null)"""
+        self.assertIsNone(message.set_null)
+
+    def test_has_value_assigned_repeated(self):
+        class Foo(messages.Message):
+            pete = messages.StringField(repeated=True)
+
+        message = protojson.decode_message(Foo, '{"pete": []}')
+        self.assertTrue(message.has_value_assigned('pete'))
+
+        message = protojson.decode_message(Foo, '{"pete": ["sat"]}')
+        self.assertTrue(message.has_value_assigned('pete'))
+
+        message = protojson.decode_message(Foo, '{"pete": ["sat", "in", "a", "boat"]}')
+        self.assertTrue(message.has_value_assigned('pete'))
+
+    def test_repeated_value_null_not_allowed(self):
+        class Foo(messages.Message):
+            pete = messages.StringField(repeated=True)
+
+        self.assertRaises(messages.ValidationError, lambda: protojson.decode_message(Foo, '{"pete": null}'))
+
+    def test_explicit_field_name(self):
+        class Foo(messages.Message):
+            bob = messages.StringField(name="robert")
+            ryan = messages.StringField()
+
+        m = protojson.decode_message(Foo, '{"robert": "smith", "ryan": "morlok"}')
+
+        self.assertEquals("smith", m.bob)
+        self.assertEquals("morlok", m.ryan)
 
 class CustomProtoJson(protojson.ProtoJson):
     def encode_field(self, field, value):
