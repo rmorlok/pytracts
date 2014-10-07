@@ -209,8 +209,10 @@ class ProtojsonTest(test_util.TestCase,
                                                     '}')))
 
     def testEmptyList(self):
-        """Test that empty lists are ignored."""
-        self.assertEquals(MyMessage(),
+        """Test that empty lists are not ignored."""
+        m = MyMessage()
+        m.a_repeated = []
+        self.assertEquals(m,
                           protojson.decode_message(MyMessage,
                                                    '{"a_repeated": []}'))
 
@@ -402,6 +404,41 @@ class ProtojsonTest(test_util.TestCase,
 
         self.assertEquals("smith", m.bob)
         self.assertEquals("morlok", m.ryan)
+
+        f = Foo()
+        f.bob = "smith"
+        f.ryan = "morlok"
+
+        self.assertEquals('{"robert": "smith", "ryan": "morlok"}', protojson.encode_message(f))
+
+    def test_assigned_values_rendered(self):
+        class Animals(messages.Message):
+            bird = messages.StringField(repeated=True)
+            cow = messages.StringField()
+
+        a = Animals()
+        self.assertEquals('{}', protojson.encode_message(a))
+
+        a = Animals()
+        a.cow = "moo"
+        self.assertEquals('{"cow": "moo"}', protojson.encode_message(a))
+
+        a = Animals()
+        a.cow = None
+        self.assertEquals('{"cow": null}', protojson.encode_message(a))
+
+        a = Animals()
+        a.bird = []
+        self.assertEquals('{"bird": []}', protojson.encode_message(a))
+
+        a = Animals()
+        a.bird = ["quack", "cheep", "honk"]
+        self.assertEquals('{"bird": ["quack", "cheep", "honk"]}', protojson.encode_message(a))
+
+        a = Animals()
+        a.cow = "moo"
+        a.bird = ["quack", "cheep", "honk"]
+        self.assertEquals('{"bird": ["quack", "cheep", "honk"], "cow": "moo"}', protojson.encode_message(a))
 
 class CustomProtoJson(protojson.ProtoJson):
     def encode_field(self, field, value):

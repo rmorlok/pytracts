@@ -49,6 +49,10 @@ class EnumTest(test_util.TestCase):
     def setUp(self):
         """Set up tests."""
 
+        # Redefine Color class in case so that changes to it (an error) in one test
+        # does not affect other tests.
+        global Color
+
         class Color(messages.Enum):
             RED = 20
             ORANGE = 2
@@ -57,10 +61,6 @@ class EnumTest(test_util.TestCase):
             BLUE = 50
             INDIGO = 5
             VIOLET = 80
-
-        # Redefine Color class in case so that changes to it (an error) in one test
-        # does not affect other tests.
-        global Color
 
     def testNames(self):
         """Test that names iterates over enum names."""
@@ -1264,6 +1264,101 @@ class MessageTest(test_util.TestCase):
                           ComplexMessage.field_by_name,
                           'unknown')
 
+    def test_has_value_set(self):
+        class SimpleMessage(messages.Message):
+            s = messages.StringField(name='string')
+            i = messages.IntegerField()
+            r = messages.StringField(repeated=True)
+
+        m = SimpleMessage()
+        self.assertFalse(m.has_value_assigned('string'))
+        self.assertFalse(m.has_value_assigned('i'))
+        self.assertFalse(m.has_value_assigned('r'))
+        self.assertFalse(SimpleMessage.s.is_set(m))
+        self.assertFalse(SimpleMessage.i.is_set(m))
+        self.assertFalse(SimpleMessage.r.is_set(m))
+        self.assertEquals(None, m.s)
+        self.assertEquals(None, m.i)
+        self.assertEquals([], m.r)
+
+        m = SimpleMessage()
+        m.s = None
+
+        self.assertTrue(m.has_value_assigned('string'))
+        self.assertFalse(m.has_value_assigned('i'))
+        self.assertFalse(m.has_value_assigned('r'))
+        self.assertTrue(SimpleMessage.s.is_set(m))
+        self.assertFalse(SimpleMessage.i.is_set(m))
+        self.assertFalse(SimpleMessage.r.is_set(m))
+        self.assertEquals(None, m.s)
+        self.assertEquals(None, m.i)
+        self.assertEquals([], m.r)
+
+        m = SimpleMessage()
+        m.i = None
+
+        self.assertFalse(m.has_value_assigned('string'))
+        self.assertTrue(m.has_value_assigned('i'))
+        self.assertFalse(m.has_value_assigned('r'))
+        self.assertFalse(SimpleMessage.s.is_set(m))
+        self.assertTrue(SimpleMessage.i.is_set(m))
+        self.assertFalse(SimpleMessage.r.is_set(m))
+        self.assertEquals(None, m.s)
+        self.assertEquals(None, m.i)
+        self.assertEquals([], m.r)
+
+        m = SimpleMessage()
+        m.s = "foo"
+
+        self.assertTrue(m.has_value_assigned('string'))
+        self.assertFalse(m.has_value_assigned('i'))
+        self.assertFalse(m.has_value_assigned('r'))
+        self.assertTrue(SimpleMessage.s.is_set(m))
+        self.assertFalse(SimpleMessage.i.is_set(m))
+        self.assertFalse(SimpleMessage.r.is_set(m))
+        self.assertEquals("foo", m.s)
+        self.assertEquals(None, m.i)
+        self.assertEquals([], m.r)
+
+        m = SimpleMessage()
+        m.i = 123
+
+        self.assertFalse(m.has_value_assigned('string'))
+        self.assertTrue(m.has_value_assigned('i'))
+        self.assertFalse(m.has_value_assigned('r'))
+        self.assertFalse(SimpleMessage.s.is_set(m))
+        self.assertTrue(SimpleMessage.i.is_set(m))
+        self.assertFalse(SimpleMessage.r.is_set(m))
+        self.assertEquals(None, m.s)
+        self.assertEquals(123, m.i)
+        self.assertEquals([], m.r)
+
+        m = SimpleMessage()
+        m.r = []
+
+        self.assertFalse(m.has_value_assigned('string'))
+        self.assertFalse(m.has_value_assigned('i'))
+        self.assertTrue(m.has_value_assigned('r'))
+        self.assertFalse(SimpleMessage.s.is_set(m))
+        self.assertFalse(SimpleMessage.i.is_set(m))
+        self.assertTrue(SimpleMessage.r.is_set(m))
+        self.assertEquals(None, m.s)
+        self.assertEquals(None, m.i)
+        self.assertEquals([], m.r)
+
+        m = SimpleMessage()
+        m.r = ['foo', 'bar']
+
+        self.assertFalse(m.has_value_assigned('string'))
+        self.assertFalse(m.has_value_assigned('i'))
+        self.assertTrue(m.has_value_assigned('r'))
+        self.assertFalse(SimpleMessage.s.is_set(m))
+        self.assertFalse(SimpleMessage.i.is_set(m))
+        self.assertTrue(SimpleMessage.r.is_set(m))
+        self.assertEquals(None, m.s)
+        self.assertEquals(None, m.i)
+        self.assertEquals(['foo', 'bar'], m.r)
+
     def testGetAssignedValue(self):
         """Test getting the assigned value of a field."""
 
@@ -1626,7 +1721,7 @@ class MessageTest(test_util.TestCase):
 
         message1 = SomeMessage(repeated=[])
         message2 = SomeMessage()
-        self.assertEquals(message1, message2)
+        self.assertNotEquals(message1, message2)
 
     def testUnknownValues(self):
         """Test message class equality with unknown fields."""

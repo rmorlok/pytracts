@@ -338,13 +338,12 @@ class URLEncodedRequestBuilder(object):
                 next_message = field.message_type()
                 self.__messages[next_path] = next_message
                 if not field.repeated:
-                    setattr(parent, field.name, next_message)
+                    setattr(parent, field.alias, next_message)
                 else:
-                    list_value = getattr(parent, field.name, None)
-                    if list_value is None:
-                        setattr(parent, field.name, [next_message])
-                    else:
-                        list_value.append(next_message)
+                    list_value = getattr(parent, field.alias, None) or []
+                    list_value.append(next_message)
+                    setattr(parent, field.alias, list_value)
+
 
             parent_path = next_path
             parent = next_message
@@ -416,7 +415,7 @@ class URLEncodedRequestBuilder(object):
 
         if len(values) != 1:
             raise messages.DecodeError(
-                'Found repeated values for field %s.' % field.name)
+                'Found repeated values for field %s.' % field.alias)
 
         value = values[0]
 
@@ -443,18 +442,20 @@ class URLEncodedRequestBuilder(object):
                 raise messages.DecodeError('Invalid enum value "%s"' % value)
 
         if field.repeated:
-            value_list = getattr(parent, field.name, None)
+            value_list = getattr(parent, field.alias, None)
             if value_list is None:
-                setattr(parent, field.name, [converted_value])
+                value_list = []
+
+            if index == len(value_list):
+                value_list.append(converted_value)
             else:
-                if index == len(value_list):
-                    value_list.append(converted_value)
-                else:
-                    # Index should never be above len(value_list) because it was
-                    # verified during the index check above.
-                    value_list[index] = converted_value
+                # Index should never be above len(value_list) because it was
+                # verified during the index check above.
+                value_list[index] = converted_value
+
+            setattr(parent, field.alias, value_list)
         else:
-            setattr(parent, field.name, converted_value)
+            setattr(parent, field.alias, converted_value)
 
         return True
 

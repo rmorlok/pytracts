@@ -115,8 +115,7 @@ class MessageJSONEncoder(json.JSONEncoder):
             for field in value.all_fields():
                 if value.has_value_assigned(field.name):
                     item = value.get_assigned_value(field.name)
-                    if item not in ([], ()):
-                        result[field.name] = self.__protojson_protocol.encode_field(field, item)
+                    result[field.name] = self.__protojson_protocol.encode_field(field, item)
 
             # Handle unrecognized fields, so they're included when a message is decoded then encoded.
             for unknown_key in value.all_unrecognized_fields():
@@ -145,11 +144,11 @@ class ProtoJson(object):
     ]
 
     def encode_field(self, field, value):
-        """Encode a python field value to a JSON value.
+        """
+        Encode a python field value to a JSON value.
 
-        Args:
-          field: A ProtoPy field instance.
-          value: A python value supported by field.
+        :param field: A ProtoPy field instance.
+        :param value: A python value supported by field.
 
         Returns:
           A JSON serializable value appropriate for field.
@@ -264,10 +263,7 @@ class ProtoJson(object):
                 continue
 
             # Normalize values in to a list.
-            if isinstance(value, list):
-                if not value:
-                    continue
-            else:
+            if not isinstance(value, list):
                 value = [value]
 
             valid_value = []

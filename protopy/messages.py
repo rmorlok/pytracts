@@ -728,8 +728,11 @@ class Message(object):
             date.month = 6
             date.year = 1911
         """
-        # A name -> value mapping of field names to their values. Name not being present in the dictionary indicates its value is unset.
+        # A name -> value mapping of field names to their values. Repeated values will be present in this map even if they have not been explicitly set
         self.__field_values = {}
+
+        # A set of field names that have been explicitly set
+        self.__set_fields = set()
 
         # Fields that have been set for which we do not recognize from our data definition
         self.__unrecognized_fields = {}
@@ -739,10 +742,15 @@ class Message(object):
             setattr(self, name, value)
             assigned.add(name)
 
+        set_fields = set(self.__set_fields)
+
         # initialize repeated fields.
         for field in self.all_fields():
             if field.repeated and field.name not in assigned:
                 setattr(self, field.name, [])
+
+        # Don't let the initialization of repeated fields affect which fields are set
+        self.__set_fields = set_fields
 
     def check_initialized(self):
         """Check class for initialization status.
@@ -844,10 +852,11 @@ class Message(object):
         if not name:
             raise ValueError("name must be specified")
 
-        if name in self.__field_values:
-            return self.__field_values.get(name)
-        elif name in self.__unrecognized_fields:
-            return self.__unrecognized_fields.get(name)
+        if name in self.__set_fields:
+            if name in self.__field_values:
+                return self.__field_values.get(name)
+            elif name in self.__unrecognized_fields:
+                return self.__unrecognized_fields.get(name)
         else:
             raise KeyError("No value is set for '%s" % name)
 
@@ -859,7 +868,7 @@ class Message(object):
 
         :return: True if set, False otherwise.
         """
-        return name in self.__field_values or name in self.__unrecognized_fields
+        return name in self.__set_fields
 
     def unset(self, name):
         """
@@ -874,6 +883,11 @@ class Message(object):
 
         if name in self.__unrecognized_fields:
             del self.__unrecognized_fields[name]
+
+        try:
+            self.__set_fields.remove(name)
+        except KeyError:
+            pass
 
     def all_unrecognized_fields(self):
         """
@@ -1001,7 +1015,7 @@ class Message(object):
         if type(self) is not type(other):
             return False
 
-        return self.__field_values == other.__field_values
+        return self.__set_fields == other.__set_fields and self.__field_values == other.__field_values
 
     def __ne__(self, other):
         """Not equals operator.
@@ -1195,6 +1209,7 @@ class Field(object):
             self.validate(value)
 
         message_instance._Message__field_values[self.name] = value
+        message_instance._Message__set_fields.add(self.name)
 
     def __get__(self, message_instance, message_class):
         if message_instance is None:
@@ -1331,6 +1346,16 @@ class Field(object):
     @classmethod
     def lookup_field_type_by_variant(cls, variant):
         return cls.__variant_to_type[variant]
+
+    def is_set(self, message):
+        """
+        Checks if the value for this field is set on the specified message.
+
+        :param message: the message to check if the field is set for
+
+        :return: True if the field is set, False otherwise
+        """
+        return message.has_value_assigned(self.name)
 
 
 class IntegerField(Field):
