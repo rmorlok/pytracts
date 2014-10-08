@@ -563,7 +563,8 @@ class ProtoConformanceTestBase(object):
         self.EncodeDecode(self.encoded_repeated_nested_empty, message)
 
     def testContentType(self):
-        self.assertTrue(isinstance(self.PROTOLIB.CONTENT_TYPE, str))
+        if hasattr(self.PROTOLIB, 'CONTENT_TYPE'):
+            self.assertTrue(isinstance(self.PROTOLIB.CONTENT_TYPE, str))
 
     def testDecodeInvalidEnumType(self):
         self.assertRaisesWithRegexpMatch(messages.DecodeError,
