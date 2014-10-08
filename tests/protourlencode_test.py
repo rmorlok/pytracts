@@ -351,5 +351,13 @@ class ProtourlencodeConformanceTest(test_util.TestCase,
                           MyMessage, 'a_datetime=invalid')
 
 
+    def test_decode_message_from_url(self):
+        class AnimalSounds(messages.Message):
+            cow = messages.StringField()
+            dog = messages.StringField()
+
+        foo = AnimalSounds(cow='moo', dog='woof')
+        self.assertEquals(foo, protourlencode.decode_message_from_url(AnimalSounds, "http://example.com?cow=moo&dog=woof"))
+
 if __name__ == '__main__':
     unittest.main()

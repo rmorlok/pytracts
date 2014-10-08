@@ -88,9 +88,9 @@ Helper classes:
 
 __author__ = 'rafek@google.com (Rafe Kaplan)'
 
-import cgi
 import re
 import urllib
+import urlparse
 
 from . import message_types
 from . import messages
@@ -100,6 +100,7 @@ __all__ = ['CONTENT_TYPE',
            'URLEncodedRequestBuilder',
            'encode_message',
            'decode_message',
+           'decode_message_from_url',
 ]
 
 CONTENT_TYPE = 'application/x-www-form-urlencoded'
@@ -555,7 +556,7 @@ def decode_message(message_type, encoded_message, **kwargs):
     """
     message = message_type()
     builder = URLEncodedRequestBuilder(message, **kwargs)
-    arguments = cgi.parse_qs(encoded_message, keep_blank_values=True)
+    arguments = urlparse.parse_qs(encoded_message, keep_blank_values=True)
     for argument, values in sorted(arguments.iteritems()):
         added = builder.add_parameter(argument, values)
         # Save off any unknown values, so they're still accessible.
@@ -563,3 +564,18 @@ def decode_message(message_type, encoded_message, **kwargs):
             message.set_unrecognized_field(argument, values, messages.Variant.STRING)
     message.check_initialized()
     return message
+
+
+def decode_message_from_url(message_type, url, **kwargs):
+    """
+    Decodes a message from the query string part of a URL.
+
+    :param message_type: the type of message to decode
+
+    :param url: the URL from which to extract the query parameters
+
+    :param kwargs: additional keyword arguments to be passed to URLEncodedRequestBuilder
+
+    :return: the message
+    """
+    return decode_message(message_type=message_type, encoded_message=urlparse.urlparse(url).query, **kwargs)
