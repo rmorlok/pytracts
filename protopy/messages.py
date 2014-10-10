@@ -1443,6 +1443,18 @@ class StringField(Field):
             super(StringField, self).validate_element(value)
 
 
+class DictField(Field):
+    """
+    Field definition for dict values. This is to allow unstructured data into a message.
+    """
+
+    VARIANTS = frozenset([Variant.MESSAGE])
+
+    DEFAULT_VARIANT = Variant.MESSAGE
+
+    type = dict
+
+
 class MessageField(Field):
     """Field definition for sub-message values.
 

@@ -440,6 +440,51 @@ class ProtojsonTest(test_util.TestCase,
         a.bird = ["quack", "cheep", "honk"]
         self.assertEquals('{"bird": ["quack", "cheep", "honk"], "cow": "moo"}', protojson.encode_message(a))
 
+    def test_dict_field_encode(self):
+        class GrabBag(messages.Message):
+            item_count = messages.IntegerField()
+            items = messages.DictField()
+
+        gb = GrabBag()
+        self.assertEquals('{}', protojson.encode_message(gb))
+
+        gb = GrabBag()
+        gb.item_count = 123
+        self.assertEquals('{"item_count": 123}', protojson.encode_message(gb))
+
+        gb = GrabBag()
+        gb.item_count = 123
+        gb.items = {}
+        self.assertEquals('{"items": {}, "item_count": 123}', protojson.encode_message(gb))
+
+        gb = GrabBag()
+        gb.item_count = 123
+        gb.items = {'a': 'b', 'foo': 'bar'}
+        self.assertEquals('{"items": {"a": "b", "foo": "bar"}, "item_count": 123}', protojson.encode_message(gb))
+
+    def test_dict_field_decode(self):
+        class GrabBag(messages.Message):
+            item_count = messages.IntegerField()
+            items = messages.DictField()
+
+        gb = GrabBag()
+        self.assertEquals(gb , protojson.decode_message(GrabBag, '{}'))
+
+        gb = GrabBag()
+        gb.item_count = 123
+        self.assertEquals(gb , protojson.decode_message(GrabBag, '{"item_count": 123}'))
+
+        gb = GrabBag()
+        gb.item_count = 123
+        gb.items = {}
+        self.assertEquals(gb , protojson.decode_message(GrabBag, '{"items": {}, "item_count": 123}'))
+
+        gb = GrabBag()
+        gb.item_count = 123
+        gb.items = {'a': 'b', 'foo': 'bar'}
+        self.assertEquals(gb , protojson.decode_message(GrabBag, '{"items": {"a": "b", "foo": "bar"}, "item_count": 123}'))
+
+
 class CustomProtoJson(protojson.ProtoJson):
     def encode_field(self, field, value):
         return '{encoded}' + value
