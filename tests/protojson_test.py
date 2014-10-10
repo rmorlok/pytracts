@@ -468,21 +468,21 @@ class ProtojsonTest(test_util.TestCase,
             items = messages.DictField()
 
         gb = GrabBag()
-        self.assertEquals(gb , protojson.decode_message(GrabBag, '{}'))
+        self.assertEquals(gb, protojson.decode_message(GrabBag, '{}'))
 
         gb = GrabBag()
         gb.item_count = 123
-        self.assertEquals(gb , protojson.decode_message(GrabBag, '{"item_count": 123}'))
+        self.assertEquals(gb, protojson.decode_message(GrabBag, '{"item_count": 123}'))
 
         gb = GrabBag()
         gb.item_count = 123
         gb.items = {}
-        self.assertEquals(gb , protojson.decode_message(GrabBag, '{"items": {}, "item_count": 123}'))
+        self.assertEquals(gb, protojson.decode_message(GrabBag, '{"items": {}, "item_count": 123}'))
 
         gb = GrabBag()
         gb.item_count = 123
         gb.items = {'a': 'b', 'foo': 'bar'}
-        self.assertEquals(gb , protojson.decode_message(GrabBag, '{"items": {"a": "b", "foo": "bar"}, "item_count": 123}'))
+        self.assertEquals(gb, protojson.decode_message(GrabBag, '{"items": {"a": "b", "foo": "bar"}, "item_count": 123}'))
 
 
 class CustomProtoJson(protojson.ProtoJson):
