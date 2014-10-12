@@ -1040,7 +1040,7 @@ class FieldList(list):
     values that are not of the correct type will raise ValidationError.
     """
 
-    def __init__(self, field_instance, sequence):
+    def __init__(self, message_instance, field_instance, sequence):
         """Constructor.
 
         Args:
@@ -1049,6 +1049,8 @@ class FieldList(list):
         """
         if not field_instance.repeated:
             raise FieldDefinitionError('FieldList may only accept repeated fields')
+
+        self.__message = message_instance
         self.__field = field_instance
         self.__field.validate(sequence)
         list.__init__(self, sequence)
@@ -1058,31 +1060,49 @@ class FieldList(list):
         """Field that validates list."""
         return self.__field
 
+    @property
+    def message(self):
+        """Message this value belongs to"""
+        return self.__message
+
+    def __notify_message_of_value_change(self):
+        """Notify the message that our value has changed to ensure that the value is marked as set"""
+        if self.__message and self.__field:
+            setattr(self.__message, self.__field.alias, self)
+
     def __setslice__(self, i, j, sequence):
         """Validate slice assignment to list."""
         self.__field.validate(sequence)
         list.__setslice__(self, i, j, sequence)
+        self.__notify_message_of_value_change()
 
     def __setitem__(self, index, value):
         """Validate item assignment to list."""
         self.__field.validate_element(value)
         list.__setitem__(self, index, value)
+        self.__notify_message_of_value_change()
 
     def append(self, value):
         """Validate item appending to list."""
         self.__field.validate_element(value)
-        return list.append(self, value)
+        ret_val = list.append(self, value)
+        self.__notify_message_of_value_change()
+        return ret_val
+
 
     def extend(self, sequence):
         """Validate extension of list."""
         self.__field.validate(sequence)
-        return list.extend(self, sequence)
+        ret_val = list.extend(self, sequence)
+        self.__notify_message_of_value_change()
+        return ret_val
 
     def insert(self, index, value):
         """Validate item insertion to list."""
         self.__field.validate_element(value)
-        return list.insert(self, index, value)
-
+        ret_val = list.insert(self, index, value)
+        self.__notify_message_of_value_change()
+        return ret_val
 
 # TODO(rafek): Prevent additional field subclasses.
 class Field(object):
@@ -1204,7 +1224,9 @@ class Field(object):
                     'May not assign None to repeated field %s' % self.name)
 
         if self.repeated:
-            value = FieldList(self, value)
+            value = FieldList(message_instance=message_instance,
+                              field_instance=self,
+                              sequence=value)
         else:
             self.validate(value)
 

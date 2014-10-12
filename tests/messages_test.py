@@ -1359,6 +1359,45 @@ class MessageTest(test_util.TestCase):
         self.assertEquals(None, m.i)
         self.assertEquals(['foo', 'bar'], m.r)
 
+    def test_has_value_set_repeated_values(self):
+        class WithRepeated(messages.Message):
+            foo = messages.IntegerField(repeated=True)
+
+        msg = WithRepeated()
+        self.assertEquals([], msg.foo)
+        self.assertFalse(WithRepeated.foo.is_set(msg))
+
+        msg = WithRepeated()
+        msg.foo = []
+        self.assertTrue(WithRepeated.foo.is_set(msg))
+
+        msg = WithRepeated()
+        msg.foo.append(1)
+        self.assertTrue(WithRepeated.foo.is_set(msg))
+
+    def test_repeated_values_dont_cross_messages(self):
+        class WithRepeated(messages.Message):
+            foo = messages.IntegerField(repeated=True)
+
+        msg1 = WithRepeated()
+        msg2 = WithRepeated()
+        self.assertEquals([], msg1.foo)
+        self.assertEquals([], msg2.foo)
+        self.assertFalse(WithRepeated.foo.is_set(msg1))
+        self.assertFalse(WithRepeated.foo.is_set(msg2))
+
+        msg1.foo = msg2.foo
+        self.assertEquals([], msg1.foo)
+        self.assertEquals([], msg2.foo)
+        self.assertTrue(WithRepeated.foo.is_set(msg1))
+        self.assertFalse(WithRepeated.foo.is_set(msg2))
+
+        msg1.foo.append(1)
+        self.assertEquals([1], msg1.foo)
+        self.assertEquals([], msg2.foo)
+        self.assertTrue(WithRepeated.foo.is_set(msg1))
+        self.assertFalse(WithRepeated.foo.is_set(msg2))
+
     def testGetAssignedValue(self):
         """Test getting the assigned value of a field."""
 
