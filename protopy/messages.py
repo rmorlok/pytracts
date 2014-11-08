@@ -1380,6 +1380,27 @@ class Field(object):
         return message.has_value_assigned(self.name)
 
 
+class UntypedField(Field):
+    """Field that does not care what type is given to it"""
+    VARIANTS = frozenset([Variant.INT32,
+                          Variant.INT64,
+                          Variant.UINT32,
+                          Variant.UINT64,
+                          Variant.SINT32,
+                          Variant.SINT64,
+                          Variant.FLOAT,
+                          Variant.DOUBLE,
+                          Variant.BOOL,
+                          Variant.BYTES,
+                          Variant.STRING,
+                          Variant.MESSAGE
+    ])
+
+    DEFAULT_VARIANT = Variant.STRING
+
+    type = (int, long, float, bool, str, unicode, dict)
+
+
 class IntegerField(Field):
     """Field definition for integer values."""
 

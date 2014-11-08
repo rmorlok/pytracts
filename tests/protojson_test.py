@@ -440,6 +440,68 @@ class ProtojsonTest(test_util.TestCase,
         a.bird = ["quack", "cheep", "honk"]
         self.assertEquals('{"bird": ["quack", "cheep", "honk"], "cow": "moo"}', protojson.encode_message(a))
 
+    def test_untyped_field_encode(self):
+        class Foo(messages.Message):
+            bar = messages.UntypedField()
+
+        f = Foo()
+        self.assertEquals('{}', protojson.encode_message(f))
+
+        f = Foo()
+        f.bar = 123
+        self.assertEquals('{"bar": 123}', protojson.encode_message(f))
+
+        f = Foo()
+        f.bar = "meow"
+        self.assertEquals('{"bar": "meow"}', protojson.encode_message(f))
+
+        f = Foo()
+        f.bar = True
+        self.assertEquals('{"bar": true}', protojson.encode_message(f))
+
+        f = Foo()
+        f.bar = 1.23
+        self.assertEquals('{"bar": 1.23}', protojson.encode_message(f))
+
+    def test_untyped_field_decode(self):
+        class Foo(messages.Message):
+            bar = messages.UntypedField()
+
+        f = Foo()
+        self.assertEquals(f, protojson.decode_message(Foo, '{}'))
+
+        f = Foo()
+        f.bar = 123
+        self.assertEquals(f, protojson.decode_message(Foo, '{"bar": 123}'))
+
+        f = Foo()
+        f.bar = "meow"
+        self.assertEquals(f, protojson.decode_message(Foo, '{"bar": "meow"}'))
+
+        f = Foo()
+        f.bar = True
+        self.assertEquals(f, protojson.decode_message(Foo, '{"bar": true}'))
+
+        f = Foo()
+        f.bar = 1.23
+        self.assertEquals(f, protojson.decode_message(Foo, '{"bar": 1.23}'))
+
+    def test_untyped_field_repeated_encode(self):
+        class Foo(messages.Message):
+            bar = messages.UntypedField(repeated=True)
+
+        f = Foo()
+        f.bar = [123, "woof", 1.23, True]
+        self.assertEquals('{"bar": [123, "woof", 1.23, true]}', protojson.encode_message(f))
+
+    def test_untyped_field_repeated_decode(self):
+        class Foo(messages.Message):
+            bar = messages.UntypedField(repeated=True)
+
+        f = Foo()
+        f.bar = [123, "woof", 1.23, True]
+        self.assertEquals(f, protojson.decode_message(Foo, '{"bar": [123, "woof", 1.23, true]}'))
+
     def test_dict_field_encode(self):
         class GrabBag(messages.Message):
             item_count = messages.IntegerField()
