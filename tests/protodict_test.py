@@ -370,6 +370,87 @@ class ProtoDictTest(test_util.TestCase,
         a.bird = ["quack", "cheep", "honk"]
         self.assertEquals({"bird": ["quack", "cheep", "honk"], "cow": "moo"}, protodict.encode_message(a))
 
+    def test_untyped_field_encode(self):
+        class Foo(messages.Message):
+            bar = messages.UntypedField()
+
+        f = Foo()
+        self.assertEquals({}, protodict.encode_message(f))
+
+        f = Foo()
+        f.bar = 123
+        self.assertEquals({"bar": 123}, protodict.encode_message(f))
+
+        f = Foo()
+        f.bar = "meow"
+        self.assertEquals({"bar": "meow"}, protodict.encode_message(f))
+
+        f = Foo()
+        f.bar = True
+        self.assertEquals({"bar": True}, protodict.encode_message(f))
+
+        f = Foo()
+        f.bar = 1.23
+        self.assertEquals({"bar": 1.23}, protodict.encode_message(f))
+
+        f = Foo()
+        f.bar = None
+        self.assertEquals({"bar": None}, protodict.encode_message(f))
+
+        f = Foo()
+        f.bar = [[123, 1.23, "woof", True], "meow"]
+        self.assertEquals({"bar": [[123, 1.23, "woof", True], "meow"]}, protodict.encode_message(f))
+
+    def test_untyped_field_decode(self):
+        class Foo(messages.Message):
+            bar = messages.UntypedField()
+
+        f = Foo()
+        self.assertEquals(f, protodict.decode_message(Foo, {}))
+
+        f = Foo()
+        f.bar = 123
+        self.assertEquals(f, protodict.decode_message(Foo, {"bar": 123}))
+
+        f = Foo()
+        f.bar = "meow"
+        self.assertEquals(f, protodict.decode_message(Foo, {"bar": "meow"}))
+
+        f = Foo()
+        f.bar = True
+        self.assertEquals(f, protodict.decode_message(Foo, {"bar": True}))
+
+        f = Foo()
+        f.bar = 1.23
+        self.assertEquals(f, protodict.decode_message(Foo, {"bar": 1.23}))
+
+        f = Foo()
+        f.bar = 1.23
+        self.assertEquals(f, protodict.decode_message(Foo, {"bar": 1.23}))
+
+        f = Foo()
+        f.bar = None
+        self.assertEquals(f, protodict.decode_message(Foo, {"bar": None}))
+
+        f = Foo()
+        f.bar = [[123, 1.23, "woof", True], "meow"]
+        self.assertEquals(f, protodict.decode_message(Foo, {"bar": [[123, 1.23, "woof", True], "meow"]}))
+
+    def test_untyped_field_repeated_encode(self):
+        class Foo(messages.Message):
+            bar = messages.UntypedField(repeated=True)
+
+        f = Foo()
+        f.bar = [123, "woof", 1.23, True]
+        self.assertEquals({"bar": [123, "woof", 1.23, True]}, protodict.encode_message(f))
+
+    def test_untyped_field_repeated_decode(self):
+        class Foo(messages.Message):
+            bar = messages.UntypedField(repeated=True)
+
+        f = Foo()
+        f.bar = [123, "woof", 1.23, True]
+        self.assertEquals(f, protodict.decode_message(Foo, {"bar": [123, "woof", 1.23, True]}))
 
 if __name__ == '__main__':
     unittest.main()

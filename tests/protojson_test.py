@@ -463,6 +463,14 @@ class ProtojsonTest(test_util.TestCase,
         f.bar = 1.23
         self.assertEquals('{"bar": 1.23}', protojson.encode_message(f))
 
+        f = Foo()
+        f.bar = None
+        self.assertEquals('{"bar": null}', protojson.encode_message(f))
+
+        f = Foo()
+        f.bar = [[123, 1.23, "woof", True], "meow"]
+        self.assertEquals('{"bar": [[123, 1.23, "woof", true], "meow"]}', protojson.encode_message(f))
+
     def test_untyped_field_decode(self):
         class Foo(messages.Message):
             bar = messages.UntypedField()
@@ -485,6 +493,19 @@ class ProtojsonTest(test_util.TestCase,
         f = Foo()
         f.bar = 1.23
         self.assertEquals(f, protojson.decode_message(Foo, '{"bar": 1.23}'))
+
+        f = Foo()
+        f.bar = 1.23
+        self.assertEquals(f, protojson.decode_message(Foo, '{"bar": 1.23}'))
+
+        f = Foo()
+        f.bar = None
+        self.assertEquals(f, protojson.decode_message(Foo, '{"bar": null}'))
+
+        f = Foo()
+        f.bar = [[123, 1.23, "woof", True], "meow"]
+        self.assertEquals(f, protojson.decode_message(Foo, '{"bar": [[123, 1.23, "woof", true], "meow"]}'))
+
 
     def test_untyped_field_repeated_encode(self):
         class Foo(messages.Message):

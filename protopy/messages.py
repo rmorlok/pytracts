@@ -1398,7 +1398,7 @@ class UntypedField(Field):
 
     DEFAULT_VARIANT = Variant.STRING
 
-    type = (int, long, float, bool, str, unicode, dict)
+    type = (int, long, float, bool, str, unicode, dict, list)
 
 
 class IntegerField(Field):

@@ -138,20 +138,23 @@ def decode_dictionary(message_type, dictionary):
                 else:
                     logging.warning('No variant found for unrecognized field: %s', key)
                 continue
-
-            # Normalize values in to a list.
-            if not isinstance(value, list):
-                value = [value]
-
-            valid_value = []
-            for item in value:
-                valid_value.append(__decode_field(field, item))
-
-            if field.repeated:
-                existing_value = getattr(message, field.name)
-                setattr(message, field.alias, valid_value)
+            # Special case untyped fields to allow the data to flow right in
+            if isinstance(field, messages.UntypedField):
+                setattr(message, field.alias, value)
             else:
-                setattr(message, field.alias, valid_value[-1])
+                # Normalize values in to a list.
+                if not isinstance(value, list):
+                    value = [value]
+
+                valid_value = []
+                for item in value:
+                    valid_value.append(__decode_field(field, item))
+
+                if field.repeated:
+                    existing_value = getattr(message, field.name)
+                    setattr(message, field.alias, valid_value)
+                else:
+                    setattr(message, field.alias, valid_value[-1])
 
         return message
 
