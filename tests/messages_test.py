@@ -1029,6 +1029,25 @@ class FieldTest(test_util.TestCase):
             'Field string_field encountered non-ASCII string',
             setattr, thing, 'string_field', test_util.BINARY)
 
+    def testCoerceValue(self):
+        class Person(messages.Message):
+            weight = messages.IntegerField()
+
+        p = Person()
+        p.weight = Person.weight.coerce(123)
+        self.assertEquals(123, p.weight)
+
+        p.weight = Person.weight.coerce(123.45)
+        self.assertEquals(123, p.weight)
+
+        p.weight = Person.weight.coerce('123')
+        self.assertEquals(123, p.weight)
+
+    def testCoerceValueInvalid(self):
+        class Person(messages.Message):
+            weight = messages.IntegerField()
+
+        self.assertRaises(ValueError, lambda: Person.weight.coerce({}))
 
 class MessageTest(test_util.TestCase):
     """Tests for message class."""

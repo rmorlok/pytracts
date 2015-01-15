@@ -1310,6 +1310,30 @@ class Field(object):
                     raise ValidationError('Field %s is repeated. Found: %s' % (name,
                                                                                value))
 
+    def coerce(self, value):
+        """
+        Attempt to coerce the specified value into the type needed for this field.
+
+        :param value: the value to coerce
+
+        :raises: ValueError if the value cannot be coerced
+
+        :return: the value coerced to the type for this field
+        """
+        our_type = self.__class__.type
+        types = our_type if isinstance(our_type, tuple) else (our_type,)
+
+        for tp in types:
+            try:
+                return tp(value)
+            except ValueError:
+                pass
+            except TypeError:
+                pass
+
+
+        raise ValueError("Cannot convert value '%s' to type(s) %s for field %s" % (value, our_type, self.name))
+
     def validate(self, value):
         """Validate value assigned to field.
 
