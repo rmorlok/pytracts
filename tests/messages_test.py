@@ -1043,6 +1043,9 @@ class FieldTest(test_util.TestCase):
         p.weight = Person.weight.coerce('123')
         self.assertEquals(123, p.weight)
 
+        p.weight = Person.weight.coerce(None)
+        self.assertEquals(None, p.weight)
+
     def testCoerceValueInvalid(self):
         class Person(messages.Message):
             weight = messages.IntegerField()

@@ -1320,6 +1320,9 @@ class Field(object):
 
         :return: the value coerced to the type for this field
         """
+        if value is None:
+            return None
+
         our_type = self.__class__.type
         types = our_type if isinstance(our_type, tuple) else (our_type,)
 
