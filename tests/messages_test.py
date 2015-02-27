@@ -1832,6 +1832,19 @@ class MessageTest(test_util.TestCase):
         self.assertEquals(('', messages.Variant.STRING),
                           message.get_unrecognized_field_info('typetest2'))
 
+    def testStripUnknownValues(self):
+        """Test message class equality with unknown fields."""
+
+        class MyMessage(messages.Message):
+            field1 = messages.IntegerField()
+
+        message = MyMessage()
+
+        message.set_unrecognized_field('exists', 9.5, messages.Variant.DOUBLE)
+        self.assertEquals(1, len(message.all_unrecognized_fields()))
+        message.strip_unrecognized_fields()
+        self.assertEquals(0, len(message.all_unrecognized_fields()))
+
 
 class FindDefinitionTest(test_util.TestCase):
     """Test finding definitions relative to various definitions and modules."""

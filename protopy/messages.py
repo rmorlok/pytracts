@@ -895,6 +895,13 @@ class Message(object):
         """
         return self.__unrecognized_fields.keys()
 
+    def strip_unrecognized_fields(self):
+        """
+        Unset all unrecognized fields in this message.
+        """
+        for name in self.all_unrecognized_fields():
+            self.unset(name)
+
     def get_unrecognized_field_info(self, key, value_default=None, variant_default=None):
         """Get the value and variant of an unknown field in this message.
 
