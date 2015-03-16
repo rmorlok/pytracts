@@ -335,10 +335,10 @@ class FieldListTest(test_util.TestCase):
 
     def testConstructor(self):
         self.assertEquals([1, 2, 3],
-                          messages.FieldList(self.integer_field, [1, 2, 3]))
+                          messages.FieldList(None, self.integer_field, [1, 2, 3]))
         self.assertEquals([1, 2, 3],
-                          messages.FieldList(self.integer_field, (1, 2, 3)))
-        self.assertEquals([], messages.FieldList(self.integer_field, []))
+                          messages.FieldList(None, self.integer_field, (1, 2, 3)))
+        self.assertEquals([], messages.FieldList(None, self.integer_field, []))
 
     def testNone(self):
         self.assertRaises(TypeError, messages.FieldList, self.integer_field, None)
@@ -346,20 +346,21 @@ class FieldListTest(test_util.TestCase):
     def testDoNotAutoConvertString(self):
         string_field = messages.StringField(repeated=True)
         self.assertRaises(messages.ValidationError,
-                          messages.FieldList, string_field, 'abc')
+                          messages.FieldList, None, string_field, 'abc')
 
     def testConstructorCopies(self):
         a_list = [1, 3, 6]
-        field_list = messages.FieldList(self.integer_field, a_list)
+        field_list = messages.FieldList(None, self.integer_field, a_list)
         self.assertFalse(a_list is field_list)
         self.assertFalse(field_list is
-                         messages.FieldList(self.integer_field, field_list))
+                         messages.FieldList(None, self.integer_field, field_list))
 
     def testNonRepeatedField(self):
         self.assertRaisesWithRegexpMatch(
             messages.FieldDefinitionError,
             'FieldList may only accept repeated fields',
             messages.FieldList,
+            None,
             messages.IntegerField(),
             [])
 
@@ -368,26 +369,26 @@ class FieldListTest(test_util.TestCase):
             messages.ValidationError,
             re.escape("Expected type (<type 'int'>, <type 'long'>) "
                       "for IntegerField, found 1 (type <type 'str'>)"),
-            messages.FieldList, self.integer_field, ["1", "2", "3"])
+            messages.FieldList, None, self.integer_field, ["1", "2", "3"])
 
     def testConstructor_Scalars(self):
         self.assertRaisesWithRegexpMatch(
             messages.ValidationError,
             "IntegerField is repeated. Found: 3",
-            messages.FieldList, self.integer_field, 3)
+            messages.FieldList, None, self.integer_field, 3)
 
         self.assertRaisesWithRegexpMatch(
             messages.ValidationError,
             "IntegerField is repeated. Found: <listiterator object",
-            messages.FieldList, self.integer_field, iter([1, 2, 3]))
+            messages.FieldList, None, self.integer_field, iter([1, 2, 3]))
 
     def testSetSlice(self):
-        field_list = messages.FieldList(self.integer_field, [1, 2, 3, 4, 5])
+        field_list = messages.FieldList(None, self.integer_field, [1, 2, 3, 4, 5])
         field_list[1:3] = [10, 20]
         self.assertEquals([1, 10, 20, 4, 5], field_list)
 
     def testSetSlice_InvalidValues(self):
-        field_list = messages.FieldList(self.integer_field, [1, 2, 3, 4, 5])
+        field_list = messages.FieldList(None, self.integer_field, [1, 2, 3, 4, 5])
 
         def setslice():
             field_list[1:3] = ['10', '20']
@@ -399,12 +400,12 @@ class FieldListTest(test_util.TestCase):
             setslice)
 
     def testSetItem(self):
-        field_list = messages.FieldList(self.integer_field, [2])
+        field_list = messages.FieldList(None, self.integer_field, [2])
         field_list[0] = 10
         self.assertEquals([10], field_list)
 
     def testSetItem_InvalidValues(self):
-        field_list = messages.FieldList(self.integer_field, [2])
+        field_list = messages.FieldList(None, self.integer_field, [2])
 
         def setitem():
             field_list[0] = '10'
@@ -416,12 +417,12 @@ class FieldListTest(test_util.TestCase):
             setitem)
 
     def testAppend(self):
-        field_list = messages.FieldList(self.integer_field, [2])
+        field_list = messages.FieldList(None, self.integer_field, [2])
         field_list.append(10)
         self.assertEquals([2, 10], field_list)
 
     def testAppend_InvalidValues(self):
-        field_list = messages.FieldList(self.integer_field, [2])
+        field_list = messages.FieldList(None, self.integer_field, [2])
         field_list.name = 'a_field'
 
         def append():
@@ -434,12 +435,12 @@ class FieldListTest(test_util.TestCase):
             append)
 
     def testExtend(self):
-        field_list = messages.FieldList(self.integer_field, [2])
+        field_list = messages.FieldList(None, self.integer_field, [2])
         field_list.extend([10])
         self.assertEquals([2, 10], field_list)
 
     def testExtend_InvalidValues(self):
-        field_list = messages.FieldList(self.integer_field, [2])
+        field_list = messages.FieldList(None, self.integer_field, [2])
 
         def extend():
             field_list.extend(['10'])
@@ -451,12 +452,12 @@ class FieldListTest(test_util.TestCase):
             extend)
 
     def testInsert(self):
-        field_list = messages.FieldList(self.integer_field, [2, 3])
+        field_list = messages.FieldList(None, self.integer_field, [2, 3])
         field_list.insert(1, 10)
         self.assertEquals([2, 10, 3], field_list)
 
     def testInsert_InvalidValues(self):
-        field_list = messages.FieldList(self.integer_field, [2, 3])
+        field_list = messages.FieldList(None, self.integer_field, [2, 3])
 
         def insert():
             field_list.insert(1, '10')
@@ -1764,7 +1765,7 @@ class MessageTest(test_util.TestCase):
 
         self.assertRaisesWithRegexpMatch(
             AttributeError,
-            'May not assign arbitrary value does_not_exist to message SomeMessage',
+            "May not assign arbitrary value 'does_not_exist' to message 'SomeMessage'",
             SomeMessage,
             does_not_exist=10)
 

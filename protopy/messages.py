@@ -66,6 +66,8 @@ __all__ = ['MAX_ENUM_VALUE',
            'StringField',
            'MessageField',
            'EnumField',
+           'DictField',
+           'UntypedField',
            'find_definition',
 
            'Error',
