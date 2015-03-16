@@ -157,11 +157,11 @@ class URLEncodedRequestBuilder(object):
 
           class Inner(messages.Message):
 
-            very_inner = messages.MessageField(VeryInner, 1, repeated=True)
+            very_inner = messages.MessageField(VeryInner, repeated=True)
 
           class Outer(messages.Message):
 
-            inner = messages.MessageField(Inner, 1)
+            inner = messages.MessageField(Inner)
 
         If this builder is building an instance of Outer, that instance is
         referred to in the URL encoded parameters without a path.  Therefore
@@ -233,10 +233,11 @@ class URLEncodedRequestBuilder(object):
             except KeyError:
                 return None
 
-            if field.repeated != (index is not None):
-                return None
-
             if isinstance(field, messages.MessageField):
+                # Repeated message fields need to use special notation
+                if field.repeated != (index is not None):
+                    return None
+
                 message_type = field.message_type
             else:
                 message_type = None
@@ -381,11 +382,11 @@ class URLEncodedRequestBuilder(object):
         #
         #   class Inner(object):
         #
-        #     repeated = messages.MessageField(Repeated, 1, repeated=True)
+        #     repeated = messages.MessageField(Repeated, repeated=True)
         #
         #   class Outer(object):
         #
-        #     inner = messages.MessageField(Inner, 1)
+        #     inner = messages.MessageField(Inner)
         #
         #   instance = Outer()
         #   builder = URLEncodedRequestBuilder(instance)
@@ -414,49 +415,50 @@ class URLEncodedRequestBuilder(object):
         name, index = path[-1]
         field = parent.field_by_name(name)
 
-        if len(values) != 1:
-            raise messages.DecodeError(
-                'Found repeated values for field %s.' % field.alias)
+        if len(values) != 1 and not field.repeated:
+            raise messages.DecodeError('Found repeated values for field %s.' % field.alias)
 
-        value = values[0]
-
-        if isinstance(field, messages.IntegerField):
-            converted_value = int(value)
-        elif isinstance(field, message_types.DateTimeField):
-            try:
-                converted_value = util.decode_datetime(value)
-            except ValueError, e:
-                raise messages.DecodeError(e)
-        elif isinstance(field, messages.MessageField):
-            # Just make sure it's instantiated.  Assignment to field or
-            # appending to list is done in __get_or_create_path.
-            self.__get_or_create_path(path)
-            return True
-        elif isinstance(field, messages.StringField):
-            converted_value = value.decode('utf-8')
-        elif isinstance(field, messages.BooleanField):
-            converted_value = value.lower() == 'true' and True or False
-        else:
-            try:
-                converted_value = field.type(value)
-            except TypeError:
-                raise messages.DecodeError('Invalid enum value "%s"' % value)
-
-        if field.repeated:
-            value_list = getattr(parent, field.alias, None)
-            if value_list is None:
-                value_list = []
-
-            if index == len(value_list):
-                value_list.append(converted_value)
+        for value in values:
+            if isinstance(field, messages.IntegerField):
+                converted_value = int(value)
+            elif isinstance(field, message_types.DateTimeField):
+                try:
+                    converted_value = util.decode_datetime(value)
+                except ValueError, e:
+                    raise messages.DecodeError(e)
+            elif isinstance(field, messages.MessageField):
+                # Just make sure it's instantiated.  Assignment to field or
+                # appending to list is done in __get_or_create_path.
+                self.__get_or_create_path(path)
+                return True
+            elif isinstance(field, messages.StringField):
+                converted_value = value.decode('utf-8')
+            elif isinstance(field, messages.BooleanField):
+                converted_value = value.lower() == 'true' and True or False
             else:
-                # Index should never be above len(value_list) because it was
-                # verified during the index check above.
-                value_list[index] = converted_value
+                try:
+                    converted_value = field.type(value)
+                except TypeError:
+                    raise messages.DecodeError('Invalid enum value "%s"' % value)
 
-            setattr(parent, field.alias, value_list)
-        else:
-            setattr(parent, field.alias, converted_value)
+            if field.repeated:
+                value_list = getattr(parent, field.alias, None)
+                if value_list is None:
+                    value_list = []
+
+                if index is not None:
+                    if index == len(value_list):
+                        value_list.append(converted_value)
+                    else:
+                        # Index should never be above len(value_list) because it was
+                        # verified during the index check above.
+                        value_list[index] = converted_value
+                else:
+                    value_list.append(converted_value)
+
+                setattr(parent, field.alias, value_list)
+            else:
+                setattr(parent, field.alias, converted_value)
 
         return True
 
@@ -495,18 +497,18 @@ def encode_message(message, prefix=''):
             if not parent.has_value_assigned(field.name):
                 continue
 
-            next_value = parent.get_assigned_value(field.name)
+            values = parent.get_assigned_value(field.name)
 
             # Found a value.  Ultimate return value should be True.
             has_any_values = True
 
             # Normalize all values in to a list.
             if not field.repeated:
-                next_value = [next_value]
+                values = [values]
 
-            for index, item in enumerate(next_value):
+            for index, item in enumerate(values):
                 # Create a name with an index if it is a repeated field.
-                if field.repeated:
+                if field.repeated and isinstance(field, messages.MessageField):
                     field_name = '%s%s-%s' % (prefix, field.name, index)
                 else:
                     field_name = prefix + field.name

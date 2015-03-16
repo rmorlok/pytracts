@@ -20,7 +20,7 @@ from tests import test_util
 
 __author__ = 'rafek@google.com (Rafe Kaplan)'
 
-import cgi
+import urlparse
 import unittest
 import urllib
 
@@ -191,7 +191,7 @@ class URLEncodedRequestBuilderTest(test_util.TestCase):
     def testAddParameter_UnexpectedNestedValue(self):
         """Test getting a nested value on a non-message sub-field."""
         message = test_util.HasNestedMessage()
-        builder = protourlencode.URLEncodedRequestBuilder(message, 'pre.')
+        builder = protourlencode.URLEncodedRequestBuilder(message, prefix='pre.')
 
         self.assertFalse(builder.add_parameter('pre.nested.a_value.whatever',
                                                ['1']))
@@ -202,7 +202,7 @@ class URLEncodedRequestBuilderTest(test_util.TestCase):
 
         self.assertFalse(builder.add_parameter('pre.illegal%20', ['1']))
 
-    def testAddParameter_UnexpectedNestedValue(self):
+    def testAddParameter_UnexpectedNestedValue2(self):
         """Test getting a nested value on a non-message sub-field
 
         There is an odd corner case where if trying to insert a repeated value
@@ -255,25 +255,24 @@ class ProtourlencodeConformanceTest(test_util.TestCase,
                                             ('enum_value', 'VAL2'),
     ], key=lambda kv: kv[0]))
 
-    encoded_repeated = urllib.urlencode(sorted([('double_value-0', 1.23),
-                                                ('double_value-1', 2.3),
-                                                ('float_value-0', -2.5),
-                                                ('float_value-1', 0.5),
-                                                ('int64_value-0', -100000000000),
-                                                ('int64_value-1', 20),
-                                                ('uint64_value-0', 102020202020),
-                                                ('uint64_value-1', 10),
-                                                ('int32_value-0', 1020),
-                                                ('int32_value-1', 718),
-                                                ('bool_value-0', 'true'),
-                                                ('bool_value-1', 'false'),
-                                                ('string_value-0',
-                                                 u'a string\u044f'.encode('utf-8')),
-                                                ('string_value-1', u'another string'.encode('utf-8')),
-                                                ('bytes_value-0', 'a bytes\xff\xfe'),
-                                                ('bytes_value-1', 'another bytes'),
-                                                ('enum_value-0', 'VAL2'),
-                                                ('enum_value-1', 'VAL1'),
+    encoded_repeated = urllib.urlencode(sorted([('double_value', 1.23),
+                                                ('double_value', 2.3),
+                                                ('float_value', -2.5),
+                                                ('float_value', 0.5),
+                                                ('int64_value', -100000000000),
+                                                ('int64_value', 20),
+                                                ('uint64_value', 102020202020),
+                                                ('uint64_value', 10),
+                                                ('int32_value', 1020),
+                                                ('int32_value', 718),
+                                                ('bool_value', 'true'),
+                                                ('bool_value', 'false'),
+                                                ('string_value', u'a string\u044f'.encode('utf-8')),
+                                                ('string_value', u'another string'.encode('utf-8')),
+                                                ('bytes_value', 'a bytes\xff\xfe'),
+                                                ('bytes_value', 'another bytes'),
+                                                ('enum_value', 'VAL2'),
+                                                ('enum_value', 'VAL1'),
     ], key=lambda kv: kv[0]))
 
     encoded_nested = urllib.urlencode(sorted([('nested.a_value', 'a string')], key=lambda kv: kv[0]))
@@ -313,10 +312,8 @@ class ProtourlencodeConformanceTest(test_util.TestCase,
 
         encoded_message = protourlencode.encode_message(message, prefix='prefix-')
         self.assertEquals({'prefix-number': ['10'],
-                           'prefix-names-0': ['Fred'],
-                           'prefix-names-1': ['Lisa'],
-                          },
-                          cgi.parse_qs(encoded_message))
+                           'prefix-names': ['Fred', 'Lisa']},
+                          urlparse.parse_qs(encoded_message))
 
         self.assertEquals(message, protourlencode.decode_message(MyMessage,
                                                                  encoded_message,
@@ -358,6 +355,52 @@ class ProtourlencodeConformanceTest(test_util.TestCase,
 
         foo = AnimalSounds(cow='moo', dog='woof')
         self.assertEquals(foo, protourlencode.decode_message_from_url(AnimalSounds, "http://example.com?cow=moo&dog=woof"))
+
+    def test_decode_message_from_url_repeated(self):
+        class Animals(messages.Message):
+            animals = messages.StringField(repeated=True)
+            number = messages.IntegerField()
+
+        tmp = Animals(animals=['dog', 'cat'], number=2)
+        self.assertEquals(tmp, protourlencode.decode_message_from_url(Animals, "http://example.com?animals=dog&animals=cat&number=2"))
+
+    def test_decode_message_from_url_repeated_message(self):
+        class Animal(messages.Message):
+            name = messages.StringField()
+            size = messages.IntegerField()
+
+        class Animals(messages.Message):
+            animals = messages.MessageField(Animal, repeated=True)
+            number = messages.IntegerField()
+
+        dog = Animal(name='dog', size=12)
+        cat = Animal(name='cat', size=10)
+        tmp = Animals(animals=[dog, cat], number=2)
+
+        self.assertEquals(tmp, protourlencode.decode_message_from_url(Animals, "http://example.com?animals-0.name=dog&animals-0.size=12&animals-1.name=cat&animals-1.size=10&number=2"))
+
+    def test_encode_message_repeated_message_field(self):
+        class Animal(messages.Message):
+            name = messages.StringField()
+            size = messages.IntegerField()
+
+        class Animals(messages.Message):
+            animals = messages.MessageField(Animal, repeated=True)
+            number = messages.IntegerField()
+
+        dog = Animal(name='dog', size=12)
+        cat = Animal(name='cat', size=10)
+        tmp = Animals(animals=[dog, cat], number=2)
+
+        encoded_message = protourlencode.encode_message(tmp)
+        self.assertEquals({'number': ['2'],
+                           'animals-0.name': ['dog'],
+                           'animals-0.size': ['12'],
+                           'animals-1.name': ['cat'],
+                           'animals-1.size': ['10']},
+                          urlparse.parse_qs(encoded_message))
+
+        self.assertEquals(tmp, protourlencode.decode_message(Animals, encoded_message))
 
 if __name__ == '__main__':
     unittest.main()
