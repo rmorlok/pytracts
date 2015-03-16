@@ -942,8 +942,8 @@ class Message(object):
         Does not try to validate field when set.
 
         Args:
-          name: Name of field to assign to.
-          vlaue: Value to assign to field.
+          alias: Name of field to assign to.
+          value: Value to assign to field.
 
         Raises:
           AttributeError when trying to assign value that is not a field.
@@ -951,8 +951,8 @@ class Message(object):
         if alias in self.__by_alias or alias.startswith('_Message__'):
             object.__setattr__(self, alias, value)
         else:
-            raise AttributeError("May not assign arbitrary value %s "
-                                 "to message %s" % (alias, type(self).__name__))
+            raise AttributeError("May not assign arbitrary value '%s' "
+                                 "to message '%s'" % (alias, type(self).__name__))
 
     def __repr__(self):
         """Make string representation of message.
