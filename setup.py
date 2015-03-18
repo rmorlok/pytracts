@@ -26,6 +26,7 @@ import setuptools
 # Python version and OS.
 REQUIRED_PACKAGES = [
     'ez_setup==0.9',
+    'iso8601==0.1.10'
     ]
 
 py_version = platform.python_version()

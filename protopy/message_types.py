@@ -116,3 +116,35 @@ class DateTimeField(messages.MessageField):
                     value.tzinfo.utcoffset(value).total_seconds() / 60)
 
         return message
+
+
+class ErrorMessage(messages.Message):
+    """
+    A message to accompany errors.
+    """
+    title = messages.StringField()
+    message = messages.StringField()
+    explanation = messages.StringField()
+
+
+def error_message_from_exception(exception):
+    """
+    Create an instance from an exception object.
+
+    :param exception: the exception
+
+    :return: ErrorMessage
+    """
+    result = ErrorMessage()
+
+    if hasattr(exception, 'message'):
+        result.message = exception.message
+
+    if hasattr(exception, 'title'):
+        result.title = exception.title
+
+    if hasattr(exception, 'explanation'):
+        result.explanation = exception.explanation
+
+    if hasattr(exception, 'detail'):
+        result.message = exception.detail
