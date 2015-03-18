@@ -748,8 +748,8 @@ class Message(object):
 
         # initialize repeated fields.
         for field in self.all_fields():
-            if field.repeated and field.name not in assigned:
-                setattr(self, field.name, [])
+            if field.repeated and field.alias not in assigned:
+                setattr(self, field.alias, [])
 
         # Don't let the initialization of repeated fields affect which fields are set
         self.__set_fields = set_fields

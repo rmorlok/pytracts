@@ -364,6 +364,31 @@ class ProtourlencodeConformanceTest(test_util.TestCase,
         tmp = Animals(animals=['dog', 'cat'], number=2)
         self.assertEquals(tmp, protourlencode.decode_message_from_url(Animals, "http://example.com?animals=dog&animals=cat&number=2"))
 
+    def test_decode_message_from_url_repeated_alias(self):
+        class Animals(messages.Message):
+            animals = messages.StringField(name='a', repeated=True)
+            number = messages.IntegerField()
+
+        tmp = Animals(animals=['dog', 'cat'], number=2)
+        self.assertEquals(tmp, protourlencode.decode_message_from_url(Animals, "http://example.com?a=dog&a=cat&number=2"))
+
+    def test_encode_message_from_url_repeated_alias(self):
+        class Animals(messages.Message):
+            animals = messages.StringField(name='a', repeated=True)
+            number = messages.IntegerField()
+
+        tmp = Animals(animals=['dog', 'cat'], number=2)
+        self.assertEquals("a=dog&a=cat&number=2", protourlencode.encode_message(tmp))
+
+    def test_decode_message_from_url_repeated_not_filled_out(self):
+        class Animals(messages.Message):
+            animals = messages.StringField(repeated=True)
+            number = messages.IntegerField()
+
+        result = protourlencode.decode_message_from_url(Animals, "http://example.com?number=2")
+        self.assertFalse(Animals.animals.is_set(result))
+        self.assertEquals([], result.animals)
+
     def test_decode_message_from_url_repeated_message(self):
         class Animal(messages.Message):
             name = messages.StringField()

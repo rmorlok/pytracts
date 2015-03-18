@@ -1382,6 +1382,15 @@ class MessageTest(test_util.TestCase):
         self.assertEquals(None, m.i)
         self.assertEquals(['foo', 'bar'], m.r)
 
+    def test_has_value_set_repeated_with_alias(self):
+        class SimpleMessage(messages.Message):
+            s = messages.StringField(name='string', repeated=True)
+            i = messages.IntegerField()
+            r = messages.StringField(repeated=True)
+
+        m = SimpleMessage(s=['a', 'b'])
+        self.assertFalse(m.has_value_assigned('s'))
+
     def test_has_value_set_repeated_values(self):
         class WithRepeated(messages.Message):
             foo = messages.IntegerField(repeated=True)
