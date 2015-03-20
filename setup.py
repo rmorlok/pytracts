@@ -25,21 +25,20 @@ import setuptools
 # Configure the required packages and scripts to install, depending on
 # Python version and OS.
 REQUIRED_PACKAGES = [
-    'ez_setup==0.9',
-    'iso8601==0.1.10'
+    'ez_setup==0.9'
     ]
 
 py_version = platform.python_version()
 if py_version < '2.6':
   REQUIRED_PACKAGES.append('simplejson')
 
-_PROTOPY_VERSION = '0.1.0'
+_PROTOPY_VERSION = '0.6.0'
 
 setuptools.setup(
     name='protopy',
     version=_PROTOPY_VERSION,
-    description='Library to define data contracts for JSON',
-    url='https://github.com/Docalytics/protopy',
+    description='Library to define data contracts for JSON and build RESTful services with Webapp2',
+    url='https://github.com/rmorlok/protopy',
     author='Docalytics Inc',
     author_email='ryan.morlok@morlok.com.com',
     # Contained modules and scripts.
