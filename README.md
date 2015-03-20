@@ -4,7 +4,7 @@ A library for defining data contracts in native Python code, based on the Google
 
 ## Define JSON Contracts with Python Objects
  
-```
+```python
 from protopy import messages, protojson, protodict
 
 class TeamMessage(messages.Message):
@@ -23,19 +23,25 @@ print protojson.encode_message(gophers)
 #=> {"colors": ["maroon", "gold"], "name": "Minnesota", "mascot": "Goldy Gopher"}
 
 # Load data from dict
-badgers = protodict.decode_message(TeamMessage, {"name": "Wisconsin", "mascot": "Bucky Badger", "colors": ["cardinal", "white"]})
+badgers = protodict.decode_message(TeamMessage, {
+    "name": "Wisconsin", 
+    "mascot": "Bucky Badger", 
+    "colors": ["cardinal", "white"]})
 print badgers.name
 #=> Wisconsin
 
 # Load data from JSON
-badgers = protojson.decode_message(TeamMessage, '{"name": "Wisconsin", "mascot": "Bucky Badger", "colors": ["cardinal", "white"]}')
+badgers = protojson.decode_message(TeamMessage, '{
+    "name": "Wisconsin", 
+    "mascot": "Bucky Badger", 
+    "colors": ["cardinal", "white"]}')
 print badgers.mascot
 #=> Bucky Badger
 ```
 
 ## Support for nested messages
 
-```
+```python
 from protopy import messages
 
 class AddressMessage(messages.MessageField)
@@ -50,8 +56,12 @@ class PersonMessage(messages.Message):
     work_address = messages.MessageField(AddressMessage)
 
 leslie = PersonMessage(
-    home_address=AddressMessage(street='123 Sesame St', city='Pawnee', state='IN', zip=22113),
-    work_address=AddressMessage(street='987 Brookstone Ln', city='Pawnee', state='IN', zip=22113)
+    home_address=AddressMessage(
+        street='123 Sesame St', 
+        city='Pawnee', state='IN', zip=22113),
+    work_address=AddressMessage(
+        street='987 Brookstone Ln', 
+        city='Pawnee', state='IN', zip=22113)
 )
 ```
 
@@ -59,7 +69,7 @@ leslie = PersonMessage(
 
 Arbitrary types:
 
-```
+```python
 from protopy import messages, protojson
 
 class BoxMessage(messages.Message):
@@ -74,7 +84,7 @@ print protojson.encode_message(b)
 
 Unstructured dictionaries:
 
-```
+```python
 from protopy import messages, protojson
 
 class UserMessage(messages.Message):
@@ -88,9 +98,9 @@ print protojson.encode_message(bob)
 #=> {"metadata": {"weight": 180, "height": 72}, "email": "bob@example.com", "name": "Bob"}
 ```
 
-## Annotate Webapp2 Handlers to handle automatice JSON serialization
+## Annotate Webapp2 Handlers for JSON serialization
 
-```
+```python
 import webapp2
 
 import protopy
@@ -141,8 +151,17 @@ class TeamHandler(webapp2.RequestHandler):
         return 201, {'Location': webapp2.uri_for('get_team', team_id='new-team-id')}
 
 app = webapp2.WSGIApplication([
-    webapp2.Route(r'/v1/teams',             methods=['GET'],    handler='example.TeamHandler:get_teams',       name='get_teams'),
-    webapp2.Route(r'/v1/teams',             methods=['POST'],   handler='example.TeamHandler:create_team',     name='create_team'),
-    webapp2.Route(r'/v1/teams/<team_id>',   methods=['GET'],    handler='example.TeamHandler:get_team',        name='get_team')
+    webapp2.Route(r'/v1/teams',             
+                  methods=['GET'],    
+                  handler='example.TeamHandler:get_teams',       
+                  name='get_teams'),
+    webapp2.Route(r'/v1/teams',             
+                  methods=['POST'],   
+                  handler='example.TeamHandler:create_team',     
+                  name='create_team'),
+    webapp2.Route(r'/v1/teams/<team_id>',   
+                  methods=['GET'],    
+                  handler='example.TeamHandler:get_team',        
+                  name='get_team')
 ], debug=True)
 ```
