@@ -165,3 +165,25 @@ app = webapp2.WSGIApplication([
                   name='get_team')
 ], debug=True)
 ```
+
+# PATCH support
+
+Check if properties have any value set, as opposed to the default value
+
+```python
+t = TeamMessage()
+
+print TeamMessage.name.is_set(t)
+#=> False
+
+print t.name
+#=> None
+
+t.name = None
+
+print TeamMessage.name.is_set(t)
+#=> True
+
+print t.name
+#=> None
+```
