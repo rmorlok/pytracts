@@ -105,7 +105,7 @@ __all__ = ['CONTENT_TYPE',
 
 CONTENT_TYPE = 'application/x-www-form-urlencoded'
 
-_FIELD_NAME_REGEX = re.compile(r'^([a-zA-Z_][a-zA-Z_0-9]*)(?:-([0-9]+))?$')
+_FIELD_NAME_REGEX = re.compile(r'^([a-zA-Z_](?:\-?[a-zA-Z_]|[a-zA-Z_0-9])*)(?:-([0-9]+))?$')
 
 
 class URLEncodedRequestBuilder(object):
