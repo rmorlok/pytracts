@@ -25,7 +25,7 @@ import logging
 
 from webob import exc
 from webob.exc import HTTPUnsupportedMediaType
-from protopy import protojson, messages, protourlencode, message_types, util, query
+from pytracts import to_json, messages, to_url, message_types, util, query
 
 __ALL__ = [
     'messages',
@@ -55,7 +55,7 @@ def log_headers(f):
 
 def endpoint(_wrapped_function=None, lenient=False, **kwargs):
     """
-    Decorator that allows an endpoint to use protopy messages for the request and response.
+    Decorator that allows an endpoint to use pytracts messages for the request and response.
     """
 
     if len(kwargs) > 1:
@@ -66,14 +66,14 @@ def endpoint(_wrapped_function=None, lenient=False, **kwargs):
         body_param_type = kwargs.values()[0]
 
         if not isinstance(body_param_type, messages.Message.__metaclass__):
-            raise TypeError("Body must be of type protopy.messages.Message")
+            raise TypeError("Body must be of type pytracts.messages.Message")
     else:
         body_param_name = None
         body_param_type = None
 
     def get_wrapper(body_param_name, body_param_type, lenient, f):
         def wrapper(self, *arguments, **keywords):
-            pj = protojson.ProtoJson()
+            pj = to_json.ProtoJson()
 
             # If we have a body message provided, this request must be json
             if body_param_name:

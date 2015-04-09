@@ -7,7 +7,7 @@ except ImportError:
     import _local_iso8601 as iso8601
 
 from webob import exc
-from protopy import messages, protourlencode, util
+from pytracts import messages, to_url, util
 
 #
 # Decorators used to make handlers more explicit. Enable things like declarative, strongly typed query string parameters.
@@ -301,7 +301,7 @@ class integer_list(comma_list):
 
 def message(*args, **kwargs):
     """
-    Decorator that allows an endpoint to use protopy messages for the query parameters.
+    Decorator that allows an endpoint to use pytracts messages for the query parameters.
     """
 
     if len(kwargs) > 1:
@@ -323,12 +323,12 @@ def message(*args, **kwargs):
         raise IndexError("Must specify query parameter message type")
 
     if not isinstance(message_param_type, messages.Message.__metaclass__):
-        raise TypeError("Message must be of type protopy.messages.Message")
+        raise TypeError("Message must be of type pytracts.messages.Message")
 
     def get_wrapper(message_param_name, message_param_type, f):
         def wrapper(self, *arguments, **keywords):
             try:
-                m = protourlencode.decode_message_from_url(message_type=message_param_type, url=self.request.url)
+                m = to_url.decode_message_from_url(message_type=message_param_type, url=self.request.url)
 
                 if message_param_name:
                     keywords[message_param_name] = m

@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-"""Tests for protopy.messages."""
+"""Tests for pytracts.messages."""
 from tests import test_util
 
 __author__ = 'rafek@google.com (Rafe Kaplan)'
@@ -25,8 +25,8 @@ import re
 import sys
 import unittest
 
-from protopy import message_types
-from protopy import messages
+from pytracts import message_types
+from pytracts import messages
 
 
 class ModuleInterfaceTest(test_util.ModuleInterfaceTest, test_util.TestCase):

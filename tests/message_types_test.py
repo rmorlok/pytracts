@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-"""Tests for protopy.message_types."""
+"""Tests for pytracts.message_types."""
 from tests import test_util
 
 __author__ = 'rafek@google.com (Rafe Kaplan)'
@@ -24,9 +24,9 @@ import datetime
 
 import unittest
 
-from protopy import message_types
-from protopy import messages
-from protopy import util
+from pytracts import message_types
+from pytracts import messages
+from pytracts import util
 
 
 class ModuleInterfaceTest(test_util.ModuleInterfaceTest,

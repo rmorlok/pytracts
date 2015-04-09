@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-"""Tests for protopy.protodict."""
+"""Tests for pytracts.to_dict."""
 from tests import test_util
 
 __author__ = 'ryan@docalytics.com (Rafe Kaplan)'
@@ -24,9 +24,9 @@ import datetime
 import sys
 import unittest
 
-from protopy import message_types
-from protopy import messages
-from protopy import protodict
+from pytracts import message_types
+from pytracts import messages
+from pytracts import to_dict
 
 
 class CustomField(messages.MessageField):
@@ -69,7 +69,7 @@ class MyMessage(messages.Message):
 
 class ModuleInterfaceTest(test_util.ModuleInterfaceTest,
                           test_util.TestCase):
-    MODULE = protodict
+    MODULE = to_dict
 
 
 # TODO(rafek): Convert this test to the compliance test in test_util.
@@ -77,7 +77,7 @@ class ProtoDictTest(test_util.TestCase,
                     test_util.ProtoConformanceTestBase):
     """Test dictionary encoding and decoding."""
 
-    PROTOLIB = protodict
+    PROTOLIB = to_dict
 
     encoded_empty_message = {}
 
@@ -140,7 +140,7 @@ class ProtoDictTest(test_util.TestCase,
 
     def testConvertStringToNumbers(self):
         """Test that strings passed to integer fields are converted."""
-        message = protodict.decode_message(MyMessage,
+        message = to_dict.decode_message(MyMessage,
                                            {"an_integer": "10",
                                             "a_float": "3.5",
                                             "a_repeated": ["1", "2"],
@@ -156,18 +156,18 @@ class ProtoDictTest(test_util.TestCase,
     def testWrongTypeAssignment(self):
         """Test when wrong type is assigned to a field."""
         self.assertRaises(messages.ValidationError,
-                          protodict.decode_message,
+                          to_dict.decode_message,
                           MyMessage, {"a_string": 10})
         self.assertRaises(messages.ValidationError,
-                          protodict.decode_message,
+                          to_dict.decode_message,
                           MyMessage, {"an_integer": 10.2})
         self.assertRaises(messages.ValidationError,
-                          protodict.decode_message,
+                          to_dict.decode_message,
                           MyMessage, {"an_integer": "10.2"})
 
     def testNumericEnumeration(self):
         """Test that numbers work for enum values."""
-        message = protodict.decode_message(MyMessage, {"an_enum": 2})
+        message = to_dict.decode_message(MyMessage, {"an_enum": 2})
 
         expected_message = MyMessage()
         expected_message.an_enum = MyMessage.Color.GREEN
@@ -180,19 +180,19 @@ class ProtoDictTest(test_util.TestCase,
         m.an_integer = None
         m.a_nested = None
 
-        self.assertEquals(m, protodict.decode_message(MyMessage, ({"an_integer": None, "a_nested": None})))
+        self.assertEquals(m, to_dict.decode_message(MyMessage, ({"an_integer": None, "a_nested": None})))
 
     def testEmptyList(self):
         """Test that empty lists are not ignored."""
         m = MyMessage()
         m.a_repeated = []
         self.assertEquals(m,
-                          protodict.decode_message(MyMessage,
+                          to_dict.decode_message(MyMessage,
                                                    {"a_repeated": []}))
 
     def testNotDict(self):
         """Test error when string is not valid dictionary."""
-        self.assertRaises(ValueError, protodict.decode_message, MyMessage, "this is not a dict")
+        self.assertRaises(ValueError, to_dict.decode_message, MyMessage, "this is not a dict")
 
     def testDoNotEncodeStrangeObjects(self):
         """Test trying to encode a strange object.
@@ -207,12 +207,12 @@ class ProtoDictTest(test_util.TestCase,
                 pass
 
         self.assertRaises(TypeError,
-                          protodict.encode_message,
+                          to_dict.encode_message,
                           BogusObject())
 
     def testProtodictUnrecognizedFieldName(self):
         """Test that unrecognized fields are saved and can be accessed."""
-        decoded = protodict.decode_message(MyMessage,
+        decoded = to_dict.decode_message(MyMessage,
                                            ({"an_integer": 1, "unknown_val": 2}))
         self.assertEquals(decoded.an_integer, 1)
         self.assertEquals(1, len(decoded.all_unrecognized_fields()))
@@ -222,7 +222,7 @@ class ProtoDictTest(test_util.TestCase,
 
     def testProtodictUnrecognizedFieldNumber(self):
         """Test that unrecognized fields are saved and can be accessed."""
-        decoded = protodict.decode_message(MyMessage, {"an_integer": 1, "1001": "unknown", "-123": "negative", "456_mixed": 2})
+        decoded = to_dict.decode_message(MyMessage, {"an_integer": 1, "1001": "unknown", "-123": "negative", "456_mixed": 2})
         self.assertEquals(decoded.an_integer, 1)
         self.assertEquals(3, len(decoded.all_unrecognized_fields()))
         self.assertIn(1001, decoded.all_unrecognized_fields())
@@ -237,7 +237,7 @@ class ProtoDictTest(test_util.TestCase,
 
     def testProtodictUnrecognizedNull(self):
         """Test that unrecognized fields that are None are skipped."""
-        decoded = protodict.decode_message(
+        decoded = to_dict.decode_message(
             MyMessage,
             {"an_integer": 1, "unrecognized_null": None})
         self.assertEquals(decoded.an_integer, 1)
@@ -256,7 +256,7 @@ class ProtoDictTest(test_util.TestCase,
                 ({"an_integer": 1, "unknown_val": [1, "foo", 3]},
                  messages.Variant.STRING),
                 ({"an_integer": 1, "unknown_val": True}, messages.Variant.BOOL)):
-            decoded = protodict.decode_message(MyMessage, encoded)
+            decoded = to_dict.decode_message(MyMessage, encoded)
             self.assertEquals(decoded.an_integer, 1)
             self.assertEquals(1, len(decoded.all_unrecognized_fields()))
             self.assertEquals('unknown_val', decoded.all_unrecognized_fields()[0])
@@ -264,7 +264,7 @@ class ProtoDictTest(test_util.TestCase,
             self.assertEquals(expected_variant, decoded_variant)
 
     def testDecodeRepeatedDateTime(self):
-        message = protodict.decode_message(MyMessage, {"a_repeated_datetime": [
+        message = to_dict.decode_message(MyMessage, {"a_repeated_datetime": [
             datetime.datetime(2012, 9, 30, 15, 31, 50, 262000),
             datetime.datetime(2010, 1, 21, 9, 52),
             datetime.datetime(2000, 1, 1, 1, 0, 59, 999999)
@@ -279,19 +279,19 @@ class ProtoDictTest(test_util.TestCase,
         self.assertEquals(expected_message, message)
 
     def testDecodeCustom(self):
-        message = protodict.decode_message(MyMessage, {"a_custom": 1})
+        message = to_dict.decode_message(MyMessage, {"a_custom": 1})
         self.assertEquals(MyMessage(a_custom=1), message)
 
     def testDecodeInvalidCustom(self):
-        self.assertRaises(messages.ValidationError, protodict.decode_message,
+        self.assertRaises(messages.ValidationError, to_dict.decode_message,
                           MyMessage, {"a_custom": "invalid"})
 
     def testEncodeCustom(self):
-        decoded_message = protodict.encode_message(MyMessage(a_custom=1))
+        decoded_message = to_dict.encode_message(MyMessage(a_custom=1))
         self.assertEquals({"a_custom": 1}, decoded_message)
 
     def testDecodeRepeatedCustom(self):
-        message = protodict.decode_message(
+        message = to_dict.decode_message(
             MyMessage, {"a_repeated_custom": [1, 2, 3]})
         self.assertEquals(MyMessage(a_repeated_custom=[1, 2, 3]), message)
 
@@ -300,7 +300,7 @@ class ProtoDictTest(test_util.TestCase,
             not_set = messages.StringField()
             set_null = messages.StringField()
 
-        message = protodict.decode_message(Foo, {"set_null": None})
+        message = to_dict.decode_message(Foo, {"set_null": None})
         self.assertFalse(message.has_value_assigned('not_set'))
         self.assertTrue(message.has_value_assigned('set_null'))
         self.assertIsNone(message.not_set)
@@ -310,27 +310,27 @@ class ProtoDictTest(test_util.TestCase,
         class Foo(messages.Message):
             pete = messages.StringField(repeated=True)
 
-        message = protodict.decode_message(Foo, {"pete": []})
+        message = to_dict.decode_message(Foo, {"pete": []})
         self.assertTrue(message.has_value_assigned('pete'))
 
-        message = protodict.decode_message(Foo, {"pete": ["sat"]})
+        message = to_dict.decode_message(Foo, {"pete": ["sat"]})
         self.assertTrue(message.has_value_assigned('pete'))
 
-        message = protodict.decode_message(Foo, {"pete": ["sat", "in", "a", "boat"]})
+        message = to_dict.decode_message(Foo, {"pete": ["sat", "in", "a", "boat"]})
         self.assertTrue(message.has_value_assigned('pete'))
 
     def test_repeated_value_null_not_allowed(self):
         class Foo(messages.Message):
             pete = messages.StringField(repeated=True)
 
-        self.assertRaises(messages.ValidationError, lambda: protodict.decode_message(Foo, {"pete": None}))
+        self.assertRaises(messages.ValidationError, lambda: to_dict.decode_message(Foo, {"pete": None}))
 
     def test_explicit_field_name(self):
         class Foo(messages.Message):
             bob = messages.StringField(name="robert")
             ryan = messages.StringField()
 
-        m = protodict.decode_message(Foo, {"robert": "smith", "ryan": "morlok"})
+        m = to_dict.decode_message(Foo, {"robert": "smith", "ryan": "morlok"})
 
         self.assertEquals("smith", m.bob)
         self.assertEquals("morlok", m.ryan)
@@ -339,7 +339,7 @@ class ProtoDictTest(test_util.TestCase,
         f.bob = "smith"
         f.ryan = "morlok"
 
-        self.assertEquals({"robert": "smith", "ryan": "morlok"}, protodict.encode_message(f))
+        self.assertEquals({"robert": "smith", "ryan": "morlok"}, to_dict.encode_message(f))
 
     def test_assigned_values_rendered(self):
         class Animals(messages.Message):
@@ -347,94 +347,94 @@ class ProtoDictTest(test_util.TestCase,
             cow = messages.StringField()
 
         a = Animals()
-        self.assertEquals({}, protodict.encode_message(a))
+        self.assertEquals({}, to_dict.encode_message(a))
 
         a = Animals()
         a.cow = "moo"
-        self.assertEquals({"cow": "moo"}, protodict.encode_message(a))
+        self.assertEquals({"cow": "moo"}, to_dict.encode_message(a))
 
         a = Animals()
         a.cow = None
-        self.assertEquals({"cow": None}, protodict.encode_message(a))
+        self.assertEquals({"cow": None}, to_dict.encode_message(a))
 
         a = Animals()
         a.bird = []
-        self.assertEquals({"bird": []}, protodict.encode_message(a))
+        self.assertEquals({"bird": []}, to_dict.encode_message(a))
 
         a = Animals()
         a.bird = ["quack", "cheep", "honk"]
-        self.assertEquals({"bird": ["quack", "cheep", "honk"]}, protodict.encode_message(a))
+        self.assertEquals({"bird": ["quack", "cheep", "honk"]}, to_dict.encode_message(a))
 
         a = Animals()
         a.cow = "moo"
         a.bird = ["quack", "cheep", "honk"]
-        self.assertEquals({"bird": ["quack", "cheep", "honk"], "cow": "moo"}, protodict.encode_message(a))
+        self.assertEquals({"bird": ["quack", "cheep", "honk"], "cow": "moo"}, to_dict.encode_message(a))
 
     def test_untyped_field_encode(self):
         class Foo(messages.Message):
             bar = messages.UntypedField()
 
         f = Foo()
-        self.assertEquals({}, protodict.encode_message(f))
+        self.assertEquals({}, to_dict.encode_message(f))
 
         f = Foo()
         f.bar = 123
-        self.assertEquals({"bar": 123}, protodict.encode_message(f))
+        self.assertEquals({"bar": 123}, to_dict.encode_message(f))
 
         f = Foo()
         f.bar = "meow"
-        self.assertEquals({"bar": "meow"}, protodict.encode_message(f))
+        self.assertEquals({"bar": "meow"}, to_dict.encode_message(f))
 
         f = Foo()
         f.bar = True
-        self.assertEquals({"bar": True}, protodict.encode_message(f))
+        self.assertEquals({"bar": True}, to_dict.encode_message(f))
 
         f = Foo()
         f.bar = 1.23
-        self.assertEquals({"bar": 1.23}, protodict.encode_message(f))
+        self.assertEquals({"bar": 1.23}, to_dict.encode_message(f))
 
         f = Foo()
         f.bar = None
-        self.assertEquals({"bar": None}, protodict.encode_message(f))
+        self.assertEquals({"bar": None}, to_dict.encode_message(f))
 
         f = Foo()
         f.bar = [[123, 1.23, "woof", True], "meow"]
-        self.assertEquals({"bar": [[123, 1.23, "woof", True], "meow"]}, protodict.encode_message(f))
+        self.assertEquals({"bar": [[123, 1.23, "woof", True], "meow"]}, to_dict.encode_message(f))
 
     def test_untyped_field_decode(self):
         class Foo(messages.Message):
             bar = messages.UntypedField()
 
         f = Foo()
-        self.assertEquals(f, protodict.decode_message(Foo, {}))
+        self.assertEquals(f, to_dict.decode_message(Foo, {}))
 
         f = Foo()
         f.bar = 123
-        self.assertEquals(f, protodict.decode_message(Foo, {"bar": 123}))
+        self.assertEquals(f, to_dict.decode_message(Foo, {"bar": 123}))
 
         f = Foo()
         f.bar = "meow"
-        self.assertEquals(f, protodict.decode_message(Foo, {"bar": "meow"}))
+        self.assertEquals(f, to_dict.decode_message(Foo, {"bar": "meow"}))
 
         f = Foo()
         f.bar = True
-        self.assertEquals(f, protodict.decode_message(Foo, {"bar": True}))
+        self.assertEquals(f, to_dict.decode_message(Foo, {"bar": True}))
 
         f = Foo()
         f.bar = 1.23
-        self.assertEquals(f, protodict.decode_message(Foo, {"bar": 1.23}))
+        self.assertEquals(f, to_dict.decode_message(Foo, {"bar": 1.23}))
 
         f = Foo()
         f.bar = 1.23
-        self.assertEquals(f, protodict.decode_message(Foo, {"bar": 1.23}))
+        self.assertEquals(f, to_dict.decode_message(Foo, {"bar": 1.23}))
 
         f = Foo()
         f.bar = None
-        self.assertEquals(f, protodict.decode_message(Foo, {"bar": None}))
+        self.assertEquals(f, to_dict.decode_message(Foo, {"bar": None}))
 
         f = Foo()
         f.bar = [[123, 1.23, "woof", True], "meow"]
-        self.assertEquals(f, protodict.decode_message(Foo, {"bar": [[123, 1.23, "woof", True], "meow"]}))
+        self.assertEquals(f, to_dict.decode_message(Foo, {"bar": [[123, 1.23, "woof", True], "meow"]}))
 
     def test_untyped_field_repeated_encode(self):
         class Foo(messages.Message):
@@ -442,7 +442,7 @@ class ProtoDictTest(test_util.TestCase,
 
         f = Foo()
         f.bar = [123, "woof", 1.23, True]
-        self.assertEquals({"bar": [123, "woof", 1.23, True]}, protodict.encode_message(f))
+        self.assertEquals({"bar": [123, "woof", 1.23, True]}, to_dict.encode_message(f))
 
     def test_untyped_field_repeated_decode(self):
         class Foo(messages.Message):
@@ -450,7 +450,7 @@ class ProtoDictTest(test_util.TestCase,
 
         f = Foo()
         f.bar = [123, "woof", 1.23, True]
-        self.assertEquals(f, protodict.decode_message(Foo, {"bar": [123, "woof", 1.23, True]}))
+        self.assertEquals(f, to_dict.decode_message(Foo, {"bar": [123, "woof", 1.23, True]}))
 
 if __name__ == '__main__':
     unittest.main()

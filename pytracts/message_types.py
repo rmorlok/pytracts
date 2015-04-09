@@ -32,6 +32,8 @@ __all__ = [
     'DateTimeField',
     'DateTimeMessage',
     'VoidMessage',
+    'ErrorMessage',
+    'error_message_from_exception'
 ]
 
 

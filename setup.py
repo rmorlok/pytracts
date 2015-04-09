@@ -32,20 +32,20 @@ py_version = platform.python_version()
 if py_version < '2.6':
   REQUIRED_PACKAGES.append('simplejson')
 
-_PROTOPY_VERSION = '0.6.0'
+_PYTRACTS_VERSION = '0.6.0'
 
 setuptools.setup(
-    name='protopy',
-    version=_PROTOPY_VERSION,
+    name='pytracts',
+    version=_PYTRACTS_VERSION,
     description='Library to define data contracts for JSON and build RESTful services with Webapp2',
-    url='https://github.com/rmorlok/protopy',
-    author='Docalytics Inc',
+    url='https://github.com/rmorlok/pytracts',
+    author='Ryan Morlok',
     author_email='ryan.morlok@morlok.com.com',
     # Contained modules and scripts.
     packages=setuptools.find_packages(),
     install_requires=REQUIRED_PACKAGES,
     provides=[
-        'protopy (%s)' % (_PROTOPY_VERSION,),
+        'pytracts (%s)' % (_PYTRACTS_VERSION,),
         ],
     # PyPI package information.
     classifiers=[
@@ -59,5 +59,5 @@ setuptools.setup(
         'Topic :: Software Development :: Libraries :: Python Modules',
         ],
     license='Apache 2.0',
-    keywords='protocol json',
+    keywords='protocol json contract',
     )

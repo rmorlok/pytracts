@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-"""Tests for protopy.util."""
+"""Tests for pytracts.util."""
 from tests import test_util
 
 __author__ = 'rafek@google.com (Rafe Kaplan)'
@@ -26,7 +26,7 @@ import random
 import sys
 import unittest
 
-from protopy import util
+from pytracts import util
 
 
 class ModuleInterfaceTest(test_util.ModuleInterfaceTest,
@@ -95,28 +95,6 @@ class UtilTest(test_util.TestCase):
                                          r'meth\(\) takes at most 2 positional '
                                          r'arguments \(3 given\)',
                                          MyClass().meth, 2, 3)
-
-    def testDefaultDecoration(self):
-        @util.positional
-        def fn(a, b, c=None):
-            return a, b, c
-
-        self.assertEquals((1, 2, 3), fn(1, 2, c=3))
-        self.assertEquals((3, 4, None), fn(3, b=4))
-        self.assertRaisesWithRegexpMatch(TypeError,
-                                         r'fn\(\) takes at most 2 positional '
-                                         r'arguments \(3 given\)',
-                                         fn, 2, 3, 4)
-
-    def testDefaultDecorationNoKwdsFails(self):
-        def fn(a):
-            return a
-
-        with self.assertRaisesRegexp(
-                ValueError,
-                'Functions with no keyword arguments must specify '
-                'max_positional_args'):
-            util.positional(fn)
 
 
 class AcceptItemTest(test_util.TestCase):

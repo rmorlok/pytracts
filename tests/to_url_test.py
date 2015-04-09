@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-"""Tests for protopy.protourlencode."""
+"""Tests for pytracts.to_url."""
 from tests import test_util
 
 __author__ = 'rafek@google.com (Rafe Kaplan)'
@@ -24,14 +24,14 @@ import urlparse
 import unittest
 import urllib
 
-from protopy import message_types
-from protopy import messages
-from protopy import protourlencode
+from pytracts import message_types
+from pytracts import messages
+from pytracts import to_url
 
 
 class ModuleInterfaceTest(test_util.ModuleInterfaceTest,
                           test_util.TestCase):
-    MODULE = protourlencode
+    MODULE = to_url
 
 
 class SuperMessage(messages.Message):
@@ -52,7 +52,7 @@ class URLEncodedRequestBuilderTest(test_util.TestCase):
     """Test the URL Encoded request builder."""
 
     def testMakePath(self):
-        builder = protourlencode.URLEncodedRequestBuilder(SuperSuperMessage(), prefix='pre.')
+        builder = to_url.URLEncodedRequestBuilder(SuperSuperMessage(), prefix='pre.')
 
         self.assertEquals(None, builder.make_path(''))
         self.assertEquals(None, builder.make_path('no_such_field'))
@@ -84,7 +84,7 @@ class URLEncodedRequestBuilderTest(test_util.TestCase):
 
     def testAddParameter_SimpleAttributes(self):
         message = test_util.OptionalMessage()
-        builder = protourlencode.URLEncodedRequestBuilder(message, prefix='pre.')
+        builder = to_url.URLEncodedRequestBuilder(message, prefix='pre.')
 
         self.assertTrue(builder.add_parameter('pre.int64_value', ['10']))
         self.assertTrue(builder.add_parameter('pre.string_value', ['a string']))
@@ -96,7 +96,7 @@ class URLEncodedRequestBuilderTest(test_util.TestCase):
 
     def testAddParameter_InvalidAttributes(self):
         message = SuperSuperMessage()
-        builder = protourlencode.URLEncodedRequestBuilder(message, prefix='pre.')
+        builder = to_url.URLEncodedRequestBuilder(message, prefix='pre.')
 
         def assert_empty():
             self.assertEquals(None, getattr(message, 'sub_message'))
@@ -111,7 +111,7 @@ class URLEncodedRequestBuilderTest(test_util.TestCase):
 
     def testAddParameter_NestedAttributes(self):
         message = SuperSuperMessage()
-        builder = protourlencode.URLEncodedRequestBuilder(message, prefix='pre.')
+        builder = to_url.URLEncodedRequestBuilder(message, prefix='pre.')
 
         # Set an empty message fields.
         self.assertTrue(builder.add_parameter('pre.sub_message', ['']))
@@ -129,7 +129,7 @@ class URLEncodedRequestBuilderTest(test_util.TestCase):
 
     def testAddParameter_NestedMessages(self):
         message = SuperSuperMessage()
-        builder = protourlencode.URLEncodedRequestBuilder(message, prefix='pre.')
+        builder = to_url.URLEncodedRequestBuilder(message, prefix='pre.')
 
         # Add a repeated empty message.
         self.assertTrue(builder.add_parameter(
@@ -158,7 +158,7 @@ class URLEncodedRequestBuilderTest(test_util.TestCase):
 
     def testAddParameter_RepeatedValues(self):
         message = test_util.RepeatedMessage()
-        builder = protourlencode.URLEncodedRequestBuilder(message, prefix='pre.')
+        builder = to_url.URLEncodedRequestBuilder(message, prefix='pre.')
 
         self.assertTrue(builder.add_parameter('pre.int64_value-0', ['20']))
         self.assertTrue(builder.add_parameter('pre.int64_value-1', ['30']))
@@ -171,13 +171,13 @@ class URLEncodedRequestBuilderTest(test_util.TestCase):
 
     def testAddParameter_InvalidValuesMayRepeat(self):
         message = test_util.OptionalMessage()
-        builder = protourlencode.URLEncodedRequestBuilder(message, prefix='pre.')
+        builder = to_url.URLEncodedRequestBuilder(message, prefix='pre.')
 
         self.assertFalse(builder.add_parameter('nothing', [1, 2, 3]))
 
     def testAddParameter_RepeatedParameters(self):
         message = test_util.OptionalMessage()
-        builder = protourlencode.URLEncodedRequestBuilder(message, prefix='pre.')
+        builder = to_url.URLEncodedRequestBuilder(message, prefix='pre.')
 
         self.assertRaises(messages.DecodeError,
                           builder.add_parameter,
@@ -191,14 +191,14 @@ class URLEncodedRequestBuilderTest(test_util.TestCase):
     def testAddParameter_UnexpectedNestedValue(self):
         """Test getting a nested value on a non-message sub-field."""
         message = test_util.HasNestedMessage()
-        builder = protourlencode.URLEncodedRequestBuilder(message, prefix='pre.')
+        builder = to_url.URLEncodedRequestBuilder(message, prefix='pre.')
 
         self.assertFalse(builder.add_parameter('pre.nested.a_value.whatever',
                                                ['1']))
 
     def testInvalidFieldFormat(self):
         message = test_util.OptionalMessage()
-        builder = protourlencode.URLEncodedRequestBuilder(message, prefix='pre.')
+        builder = to_url.URLEncodedRequestBuilder(message, prefix='pre.')
 
         self.assertFalse(builder.add_parameter('pre.illegal%20', ['1']))
 
@@ -222,7 +222,7 @@ class URLEncodedRequestBuilderTest(test_util.TestCase):
 
 
         message = HasNestedRepeated()
-        builder = protourlencode.URLEncodedRequestBuilder(message, prefix='pre.')
+        builder = to_url.URLEncodedRequestBuilder(message, prefix='pre.')
 
         self.assertTrue(builder.add_parameter('pre.nested-0.values-0', ['1']))
         # Try to create an indexed value on a non-message field.
@@ -235,7 +235,7 @@ class URLEncodedRequestBuilderTest(test_util.TestCase):
 
 class ProtourlencodeConformanceTest(test_util.TestCase,
                                     test_util.ProtoConformanceTestBase):
-    PROTOLIB = protourlencode
+    PROTOLIB = to_url
 
     encoded_partial = urllib.urlencode(sorted([('double_value', 1.23),
                                                ('int64_value', -100000000000),
@@ -310,12 +310,12 @@ class ProtourlencodeConformanceTest(test_util.TestCase,
         message.number = 10
         message.names = [u'Fred', u'Lisa']
 
-        encoded_message = protourlencode.encode_message(message, prefix='prefix-')
+        encoded_message = to_url.encode_message(message, prefix='prefix-')
         self.assertEquals({'prefix-number': ['10'],
                            'prefix-names': ['Fred', 'Lisa']},
                           urlparse.parse_qs(encoded_message))
 
-        self.assertEquals(message, protourlencode.decode_message(MyMessage,
+        self.assertEquals(message, to_url.decode_message(MyMessage,
                                                                  encoded_message,
                                                                  prefix='prefix-'))
 
@@ -325,7 +325,7 @@ class ProtourlencodeConformanceTest(test_util.TestCase,
         class MyMessage(messages.Message):
             number = messages.IntegerField()
 
-        decoded = protourlencode.decode_message(MyMessage,
+        decoded = to_url.decode_message(MyMessage,
                                                 self.unexpected_tag_message)
         self.assertEquals(1, len(decoded.all_unrecognized_fields()))
         self.assertEquals('unexpected', decoded.all_unrecognized_fields()[0])
@@ -336,7 +336,7 @@ class ProtourlencodeConformanceTest(test_util.TestCase,
         repeated_unknown = urllib.urlencode([('repeated', 400),
                                              ('repeated', 'test'),
                                              ('repeated', '123.456')])
-        decoded2 = protourlencode.decode_message(MyMessage, repeated_unknown)
+        decoded2 = to_url.decode_message(MyMessage, repeated_unknown)
         self.assertEquals((['400', 'test', '123.456'], messages.Variant.STRING),
                           decoded2.get_unrecognized_field_info('repeated'))
 
@@ -344,7 +344,7 @@ class ProtourlencodeConformanceTest(test_util.TestCase,
         class MyMessage(messages.Message):
             a_datetime = message_types.DateTimeField()
 
-        self.assertRaises(messages.DecodeError, protourlencode.decode_message,
+        self.assertRaises(messages.DecodeError, to_url.decode_message,
                           MyMessage, 'a_datetime=invalid')
 
 
@@ -354,7 +354,7 @@ class ProtourlencodeConformanceTest(test_util.TestCase,
             dog = messages.StringField()
 
         foo = AnimalSounds(cow='moo', dog='woof')
-        self.assertEquals(foo, protourlencode.decode_message_from_url(AnimalSounds, "http://example.com?cow=moo&dog=woof"))
+        self.assertEquals(foo, to_url.decode_message_from_url(AnimalSounds, "http://example.com?cow=moo&dog=woof"))
 
     def test_decode_message_from_url_repeated(self):
         class Animals(messages.Message):
@@ -362,7 +362,7 @@ class ProtourlencodeConformanceTest(test_util.TestCase,
             number = messages.IntegerField()
 
         tmp = Animals(animals=['dog', 'cat'], number=2)
-        self.assertEquals(tmp, protourlencode.decode_message_from_url(Animals, "http://example.com?animals=dog&animals=cat&number=2"))
+        self.assertEquals(tmp, to_url.decode_message_from_url(Animals, "http://example.com?animals=dog&animals=cat&number=2"))
 
     def test_decode_message_from_url_repeated_alias(self):
         class Animals(messages.Message):
@@ -370,7 +370,7 @@ class ProtourlencodeConformanceTest(test_util.TestCase,
             number = messages.IntegerField()
 
         tmp = Animals(animals=['dog', 'cat'], number=2)
-        self.assertEquals(tmp, protourlencode.decode_message_from_url(Animals, "http://example.com?a=dog&a=cat&number=2"))
+        self.assertEquals(tmp, to_url.decode_message_from_url(Animals, "http://example.com?a=dog&a=cat&number=2"))
 
     def test_decode_message_from_url_repeated_alias_dashes(self):
         class Animals(messages.Message):
@@ -378,7 +378,7 @@ class ProtourlencodeConformanceTest(test_util.TestCase,
             number = messages.IntegerField()
 
         tmp = Animals(animals=['dog', 'cat'], number=2)
-        self.assertEquals(tmp, protourlencode.decode_message_from_url(Animals, "http://example.com?a-m=dog&a-m=cat&number=2"))
+        self.assertEquals(tmp, to_url.decode_message_from_url(Animals, "http://example.com?a-m=dog&a-m=cat&number=2"))
 
     def test_encode_message_from_url_repeated_alias(self):
         class Animals(messages.Message):
@@ -386,14 +386,14 @@ class ProtourlencodeConformanceTest(test_util.TestCase,
             number = messages.IntegerField()
 
         tmp = Animals(animals=['dog', 'cat'], number=2)
-        self.assertEquals("a=dog&a=cat&number=2", protourlencode.encode_message(tmp))
+        self.assertEquals("a=dog&a=cat&number=2", to_url.encode_message(tmp))
 
     def test_decode_message_from_url_repeated_not_filled_out(self):
         class Animals(messages.Message):
             animals = messages.StringField(repeated=True)
             number = messages.IntegerField()
 
-        result = protourlencode.decode_message_from_url(Animals, "http://example.com?number=2")
+        result = to_url.decode_message_from_url(Animals, "http://example.com?number=2")
         self.assertFalse(Animals.animals.is_set(result))
         self.assertEquals([], result.animals)
 
@@ -410,7 +410,7 @@ class ProtourlencodeConformanceTest(test_util.TestCase,
         cat = Animal(name='cat', size=10)
         tmp = Animals(animals=[dog, cat], number=2)
 
-        self.assertEquals(tmp, protourlencode.decode_message_from_url(Animals, "http://example.com?animals-0.name=dog&animals-0.size=12&animals-1.name=cat&animals-1.size=10&number=2"))
+        self.assertEquals(tmp, to_url.decode_message_from_url(Animals, "http://example.com?animals-0.name=dog&animals-0.size=12&animals-1.name=cat&animals-1.size=10&number=2"))
 
     def test_encode_message_repeated_message_field(self):
         class Animal(messages.Message):
@@ -425,7 +425,7 @@ class ProtourlencodeConformanceTest(test_util.TestCase,
         cat = Animal(name='cat', size=10)
         tmp = Animals(animals=[dog, cat], number=2)
 
-        encoded_message = protourlencode.encode_message(tmp)
+        encoded_message = to_url.encode_message(tmp)
         self.assertEquals({'number': ['2'],
                            'animals-0.name': ['dog'],
                            'animals-0.size': ['12'],
@@ -433,7 +433,7 @@ class ProtourlencodeConformanceTest(test_util.TestCase,
                            'animals-1.size': ['10']},
                           urlparse.parse_qs(encoded_message))
 
-        self.assertEquals(tmp, protourlencode.decode_message(Animals, encoded_message))
+        self.assertEquals(tmp, to_url.decode_message(Animals, encoded_message))
 
 if __name__ == '__main__':
     unittest.main()

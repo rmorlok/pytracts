@@ -90,14 +90,14 @@ class MessageJSONEncoder(json.JSONEncoder):
     Extension of JSONEncoder that can build JSON from a message object.
     """
 
-    def __init__(self, protojson_protocol=None, **kwargs):
+    def __init__(self, to_json_protocol=None, **kwargs):
         """Constructor.
 
         Args:
-          protojson_protocol: ProtoJson instance.
+          to_json_protocol: ProtoJson instance.
         """
         super(MessageJSONEncoder, self).__init__(**kwargs)
-        self.__protojson_protocol = protojson_protocol or ProtoJson.get_default()
+        self.__to_json_protocol = to_json_protocol or ProtoJson.get_default()
 
     def default(self, value):
         """
@@ -115,7 +115,7 @@ class MessageJSONEncoder(json.JSONEncoder):
             for field in value.all_fields():
                 if value.has_value_assigned(field.name):
                     item = value.get_assigned_value(field.name)
-                    result[field.name] = self.__protojson_protocol.encode_field(field, item)
+                    result[field.name] = self.__to_json_protocol.encode_field(field, item)
 
             # Handle unrecognized fields, so they're included when a message is decoded then encoded.
             for unknown_key in value.all_unrecognized_fields():
@@ -180,7 +180,7 @@ class ProtoJson(object):
         """
         message.check_initialized()
 
-        return json.dumps(message, cls=MessageJSONEncoder, protojson_protocol=self)
+        return json.dumps(message, cls=MessageJSONEncoder, to_json_protocol=self)
 
     def decode_message(self, message_type, encoded_message):
         """Merge JSON structure to Message instance.

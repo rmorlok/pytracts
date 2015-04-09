@@ -30,29 +30,33 @@ import os
 import re
 import sys
 
-__all__ = ['AcceptItem',
-           'AcceptError',
-           'Error',
-           'choose_content_type',
-           'decode_datetime',
-           'get_package_for_module',
-           'pad_string',
-           'parse_accept_header',
-           'positional',
-           'PROTORPC_PROJECT_URL',
-           'TimeZoneOffset',
+__all__ = [
+    'AcceptItem',
+    'AcceptError',
+    'Error',
+    'choose_content_type',
+    'decode_datetime',
+    'get_package_for_module',
+    'pad_string',
+    'parse_accept_header',
+    'positional',
+    'PROTORPC_PROJECT_URL',
+    'TimeZoneOffset',
+    'curry',
+    'wrapping',
+    'DEBUG'
 ]
 
 
 class Error(Exception):
-    """Base class for protopy exceptions."""
+    """Base class for pytracts exceptions."""
 
 
 class AcceptError(Error):
     """Raised when there is an error parsing the accept header."""
 
 
-PROTORPC_PROJECT_URL = 'https://github.com/Docalytics/protopy'
+PROTORPC_PROJECT_URL = 'https://github.com/Docalytics/pytracts'
 
 _TIME_ZONE_RE_STRING = r"""
   # Examples:

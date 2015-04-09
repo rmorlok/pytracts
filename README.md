@@ -1,11 +1,11 @@
-# protopy
+# pytracts
 
 A library for defining data contracts in native Python code, based on the Google ProtoRPC library (https://code.google.com/p/google-protorpc/)
 
 ## Define JSON Contracts with Python Objects
  
 ```python
-from protopy import messages, protojson, protodict
+from pytracts import messages, to_json, to_dict
 
 class TeamMessage(messages.Message):
     name = messages.StringField()
@@ -15,15 +15,15 @@ class TeamMessage(messages.Message):
 gophers = TeamMessage(name='Minnesota', colors=['maroon', 'gold'], mascot='Goldy Gopher')
 
 # Export data to python dictionary
-print protodict.encode_message(gophers)
+print to_dict.encode_message(gophers)
 #=> {'colors': ['maroon', 'gold'], 'name': 'Minnesota', 'mascot': 'Goldy Gopher'}
 
 # Export data to json string
-print protojson.encode_message(gophers)
+print to_json.encode_message(gophers)
 #=> {"colors": ["maroon", "gold"], "name": "Minnesota", "mascot": "Goldy Gopher"}
 
 # Load data from dict
-badgers = protodict.decode_message(TeamMessage, {
+badgers = to_dict.decode_message(TeamMessage, {
     "name": "Wisconsin", 
     "mascot": "Bucky Badger", 
     "colors": ["cardinal", "white"]})
@@ -31,7 +31,7 @@ print badgers.name
 #=> Wisconsin
 
 # Load data from JSON
-badgers = protojson.decode_message(TeamMessage, '{
+badgers = to_json.decode_message(TeamMessage, '{
     "name": "Wisconsin", 
     "mascot": "Bucky Badger", 
     "colors": ["cardinal", "white"]}')
@@ -42,7 +42,7 @@ print badgers.mascot
 ## Support for nested messages
 
 ```python
-from protopy import messages
+from pytracts import messages
 
 class AddressMessage(messages.MessageField)
     street = messages.StringField()
@@ -70,7 +70,7 @@ leslie = PersonMessage(
 Arbitrary types:
 
 ```python
-from protopy import messages, protojson
+from pytracts import messages, to_json
 
 class BoxMessage(messages.Message):
     height = messages.UntypedField()
@@ -78,14 +78,14 @@ class BoxMessage(messages.Message):
 
 b = BoxMessage(height=123, width="65%")
 
-print protojson.encode_message(b)
+print to_json.encode_message(b)
 #=> {"width": "65%", "height": 123}
 ```
 
 Unstructured dictionaries:
 
 ```python
-from protopy import messages, protojson
+from pytracts import messages, to_json
 
 class UserMessage(messages.Message):
     name = messages.StringField()
@@ -94,7 +94,7 @@ class UserMessage(messages.Message):
 
 bob = UserMessage(name='Bob', email='bob@example.com', metadata={'height': 72, 'weight': 180})
 
-print protojson.encode_message(bob)
+print to_json.encode_message(bob)
 #=> {"metadata": {"weight": 180, "height": 72}, "email": "bob@example.com", "name": "Bob"}
 ```
 
@@ -103,8 +103,8 @@ print protojson.encode_message(bob)
 ```python
 import webapp2
 
-import protopy
-from protopy import messages
+import pytracts
+from pytracts import messages
 
 class TeamMessage(messages.Message):
     name = messages.StringField()
@@ -123,7 +123,7 @@ badgers = TeamMessage(name='Wisconsin', colors=['cardinal', 'gold'], masot='Buck
 class TeamHandler(webapp2.RequestHandler):
     
     # Annotate endpoints to automatically serialize to JSON
-    @protopy.endpoint
+    @pytracts.endpoint
     def get_teams(self):
         
         response = TeamsResponseMessage()
@@ -133,7 +133,7 @@ class TeamHandler(webapp2.RequestHandler):
         return response
 
     # Use Webapp2 exceptions for other status codes
-    @protopy.endpoint
+    @pytracts.endpoint
     def get_team(self, team_id):
         if team_id == 'gophers':
             return gophers
@@ -143,7 +143,7 @@ class TeamHandler(webapp2.RequestHandler):
             raise webapp2.exc.HTTPNotFound()
     
     # Take a message from the JSON body of the request
-    @protopy.endpoint(team_details=TeamMessage)
+    @pytracts.endpoint(team_details=TeamMessage)
     def create_team(self, team_details):
         # Create the team based on details 
 

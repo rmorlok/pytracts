@@ -39,9 +39,9 @@ import types
 import unittest
 import sys
 
-from protopy import message_types
-from protopy import messages
-from protopy import util
+from pytracts import message_types
+from pytracts import messages
+from pytracts import util
 
 # Unicode of the word "Russian" in cyrillic.
 RUSSIAN = u'\u0440\u0443\u0441\u0441\u043a\u0438\u0439'
@@ -173,7 +173,7 @@ class ModuleInterfaceTest(object):
       Test definition:
 
         import unittest
-        from protopy import test_util
+        from pytracts import test_util
 
         import hello
 
