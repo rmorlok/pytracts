@@ -568,7 +568,7 @@ class ProtojsonTest(test_util.TestCase,
         self.assertEquals(gb, to_json.decode_message(GrabBag, '{"items": {"a": "b", "foo": "bar"}, "item_count": 123}'))
 
 
-class CustomProtoJson(to_json.ProtoJson):
+class CustomJsonEncoder(to_json.JsonEncoder):
     def encode_field(self, field, value):
         return '{encoded}' + value
 
@@ -580,7 +580,7 @@ class CustomProtoJsonTest(test_util.TestCase):
     """Tests for serialization overriding functionality."""
 
     def setUp(self):
-        self.to_json = CustomProtoJson()
+        self.to_json = CustomJsonEncoder()
 
     def testEncode(self):
         self.assertEqual('{"a_string": "{encoded}xyz"}', self.to_json.encode_message(MyMessage(a_string='xyz')))
@@ -591,12 +591,12 @@ class CustomProtoJsonTest(test_util.TestCase):
             self.to_json.decode_message(MyMessage, '{"a_string": "xyz"}'))
 
     def testDefault(self):
-        self.assertTrue(to_json.ProtoJson.get_default(),
-                        to_json.ProtoJson.get_default())
+        self.assertTrue(to_json.JsonEncoder.get_default(),
+                        to_json.JsonEncoder.get_default())
 
-        instance = CustomProtoJson()
-        to_json.ProtoJson.set_default(instance)
-        self.assertTrue(instance is to_json.ProtoJson.get_default())
+        instance = CustomJsonEncoder()
+        to_json.JsonEncoder.set_default(instance)
+        self.assertTrue(instance is to_json.JsonEncoder.get_default())
 
 
 class InvalidJsonModule(object):

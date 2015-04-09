@@ -41,7 +41,7 @@ __all__ = [
     'MessageJSONEncoder',
     'encode_message',
     'decode_message',
-    'ProtoJson',
+    'JsonEncoder',
 ]
 
 
@@ -97,7 +97,7 @@ class MessageJSONEncoder(json.JSONEncoder):
           to_json_protocol: ProtoJson instance.
         """
         super(MessageJSONEncoder, self).__init__(**kwargs)
-        self.__to_json_protocol = to_json_protocol or ProtoJson.get_default()
+        self.__to_json_protocol = to_json_protocol or JsonEncoder.get_default()
 
     def default(self, value):
         """
@@ -126,7 +126,7 @@ class MessageJSONEncoder(json.JSONEncoder):
             return super(MessageJSONEncoder, self).default(value)
 
 
-class ProtoJson(object):
+class JsonEncoder(object):
     """ProtoPy JSON implementation class.
 
     Implementation of JSON based protocol used for serializing and deserializing
@@ -337,10 +337,10 @@ class ProtoJson(object):
     def get_default():
         """Get default instanceof ProtoJson."""
         try:
-            return ProtoJson.__default
+            return JsonEncoder.__default
         except AttributeError:
-            ProtoJson.__default = ProtoJson()
-            return ProtoJson.__default
+            JsonEncoder.__default = JsonEncoder()
+            return JsonEncoder.__default
 
     @staticmethod
     def set_default(protocol):
@@ -349,15 +349,15 @@ class ProtoJson(object):
         Args:
           protocol: A ProtoJson instance.
         """
-        if not isinstance(protocol, ProtoJson):
+        if not isinstance(protocol, JsonEncoder):
             raise TypeError('Expected protocol of type ProtoJson')
-        ProtoJson.__default = protocol
+        JsonEncoder.__default = protocol
 
 
-CONTENT_TYPE = ProtoJson.CONTENT_TYPE
+CONTENT_TYPE = JsonEncoder.CONTENT_TYPE
 
-ALTERNATIVE_CONTENT_TYPES = ProtoJson.ALTERNATIVE_CONTENT_TYPES
+ALTERNATIVE_CONTENT_TYPES = JsonEncoder.ALTERNATIVE_CONTENT_TYPES
 
-encode_message = ProtoJson.get_default().encode_message
+encode_message = JsonEncoder.get_default().encode_message
 
-decode_message = ProtoJson.get_default().decode_message
+decode_message = JsonEncoder.get_default().decode_message

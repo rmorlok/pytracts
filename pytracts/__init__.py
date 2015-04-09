@@ -73,7 +73,7 @@ def endpoint(_wrapped_function=None, lenient=False, **kwargs):
 
     def get_wrapper(body_param_name, body_param_type, lenient, f):
         def wrapper(self, *arguments, **keywords):
-            pj = to_json.ProtoJson()
+            pj = to_json.JsonEncoder()
 
             # If we have a body message provided, this request must be json
             if body_param_name:
