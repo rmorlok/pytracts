@@ -30,6 +30,12 @@ __author__ = 'rafek@google.com (Rafe Kaplan)'
 import cStringIO
 import base64
 import logging
+import datetime
+
+try:
+    import iso8601
+except ImportError:
+    import _local_iso8601 as iso8601
 
 from . import message_types
 from . import messages
@@ -127,7 +133,7 @@ class MessageJSONEncoder(json.JSONEncoder):
 
 
 class JsonEncoder(object):
-    """ProtoPy JSON implementation class.
+    """Pytracts JSON implementation class.
 
     Implementation of JSON based protocol used for serializing and deserializing
     message objects.  Instances of remote.ProtocolConfig constructor or used with
@@ -142,6 +148,28 @@ class JsonEncoder(object):
         'text/x-json',
         'text/json',
     ]
+
+    def prep_dict(self, d):
+        """
+        Prepare a dictionary for encoding by making sure non-json serializable types that
+        we know how to handle are converted.
+
+        :param d: the dict
+
+        :return: the updated dict
+        """
+        if d is None:
+            return None
+
+        d = d.copy()
+
+        for key in d.iterkeys():
+            if isinstance(d[key], datetime.datetime) or isinstance(d[key], datetime.date) or isinstance(d[key], datetime.time):
+                d[key] = d[key].isoformat()
+            if isinstance(d[key], dict):
+                d[key] = self.prep_dict(d[key])
+
+        return d
 
     def encode_field(self, field, value):
         """
@@ -158,12 +186,21 @@ class JsonEncoder(object):
                 value = [base64.b64encode(byte) for byte in value]
             else:
                 value = base64.b64encode(value)
-        elif isinstance(field, message_types.DateTimeField):
-            # DateTimeField stores its data as a RFC 3339 compliant string.
+        elif isinstance(field, messages.DateTimeISO8601Field):
+            # DateTimeField stores its data as a ISO 8601 compliant string.
             if field.repeated:
                 value = [i.isoformat() for i in value]
             else:
                 value = value.isoformat()
+        elif isinstance(field, messages.DateTimeMsIntegerField):
+            # DateTimeField stores its data as a ISO 8601 compliant string.
+            if field.repeated:
+                value = [util.datetime_to_ms(i) for i in value]
+            else:
+                value = util.datetime_to_ms(value)
+        elif isinstance(field, messages.DictField):
+            value = self.prep_dict(value)
+
         return value
 
     def encode_message(self, message):
@@ -286,7 +323,7 @@ class JsonEncoder(object):
         """Decode a JSON value to a python value.
 
         Args:
-          field: A ProtoPy field instance.
+          field: A pytract field instance.
           value: A serialized JSON value.
 
         Return:
@@ -307,9 +344,17 @@ class JsonEncoder(object):
             except TypeError, err:
                 raise messages.DecodeError('Base64 decoding error: %s' % err)
 
-        elif isinstance(field, message_types.DateTimeField):
+        elif isinstance(field, messages.DateTimeISO8601Field):
             try:
-                return util.decode_datetime(value)
+                return iso8601.parse_date(value, default_timezone=None)
+            except iso8601.ParseError, err:
+                raise messages.DecodeError(err)
+
+        elif isinstance(field, messages.DateTimeMsIntegerField):
+            try:
+                return util.ms_to_datetime(value)
+            except TypeError, err:
+                raise messages.DecodeError(err)
             except ValueError, err:
                 raise messages.DecodeError(err)
 
@@ -335,7 +380,7 @@ class JsonEncoder(object):
 
     @staticmethod
     def get_default():
-        """Get default instanceof ProtoJson."""
+        """Get default instanceof to_json."""
         try:
             return JsonEncoder.__default
         except AttributeError:
@@ -350,7 +395,7 @@ class JsonEncoder(object):
           protocol: A ProtoJson instance.
         """
         if not isinstance(protocol, JsonEncoder):
-            raise TypeError('Expected protocol of type ProtoJson')
+            raise TypeError('Expected protocol of type Pytracts')
         JsonEncoder.__default = protocol
 
 

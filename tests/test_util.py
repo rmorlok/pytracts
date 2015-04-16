@@ -330,7 +330,7 @@ class HasOptionalNestedMessage(messages.Message):
     repeated_nested = messages.MessageField(OptionalMessage, repeated=True)
 
 
-class ProtoConformanceTestBase(object):
+class PytractsConformanceTestBase(object):
     """Protocol conformance test base class.
 
     Each supported protocol should implement two methods that support encoding
@@ -573,11 +573,11 @@ class ProtoConformanceTestBase(object):
                                          OptionalMessage,
                                          self.encoded_invalid_enum)
 
-    def testDateTimeNoTimeZone(self):
+    def testDateTimeNoTimeZoneMsInteger(self):
         """Test that DateTimeFields are encoded/decoded correctly."""
 
         class MyMessage(messages.Message):
-            value = message_types.DateTimeField()
+            value = messages.DateTimeMsIntegerField()
 
         value = datetime.datetime(2013, 1, 3, 11, 36, 30, 123000)
         message = MyMessage(value=value)
@@ -585,11 +585,39 @@ class ProtoConformanceTestBase(object):
             MyMessage, self.PROTOLIB.encode_message(message))
         self.assertEquals(decoded.value, value)
 
-    def testDateTimeWithTimeZone(self):
+    def testDateTimeWithTimeZoneMsInteger(self):
         """Test DateTimeFields with time zones."""
 
         class MyMessage(messages.Message):
-            value = message_types.DateTimeField()
+            value = messages.DateTimeMsIntegerField()
+
+        value = datetime.datetime(2013, 1, 3, 11, 36, 30, 123000,
+                                  util.TimeZoneOffset(8 * 60))
+
+        expected_value = datetime.datetime(2013, 1, 3, 11, 36, 30, 123000)
+
+        message = MyMessage(value=value)
+        decoded = self.PROTOLIB.decode_message(
+            MyMessage, self.PROTOLIB.encode_message(message))
+        self.assertEquals(decoded.value.replace(tzinfo=None), expected_value)
+
+    def testDateTimeNoTimeZoneIso8601(self):
+        """Test that DateTimeFields are encoded/decoded correctly."""
+
+        class MyMessage(messages.Message):
+            value = messages.DateTimeISO8601Field()
+
+        value = datetime.datetime(2013, 1, 3, 11, 36, 30, 123000)
+        message = MyMessage(value=value)
+        decoded = self.PROTOLIB.decode_message(
+            MyMessage, self.PROTOLIB.encode_message(message))
+        self.assertEquals(decoded.value, value)
+
+    def testDateTimeWithTimeZoneIso8601(self):
+        """Test DateTimeFields with time zones."""
+
+        class MyMessage(messages.Message):
+            value = messages.DateTimeISO8601Field()
 
         value = datetime.datetime(2013, 1, 3, 11, 36, 30, 123000,
                                   util.TimeZoneOffset(8 * 60))

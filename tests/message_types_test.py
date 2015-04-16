@@ -33,53 +33,5 @@ class ModuleInterfaceTest(test_util.ModuleInterfaceTest,
                           test_util.TestCase):
     MODULE = message_types
 
-
-class DateTimeFieldTest(test_util.TestCase):
-    def test_value_to_message(self):
-        field = message_types.DateTimeField()
-        message = field.value_to_message(datetime.datetime(2033, 2, 4, 11, 22, 10))
-        self.assertEqual(message_types.DateTimeMessage(milliseconds=1991128930000),
-                         message)
-
-    def test_value_to_message_bad_value(self):
-        field = message_types.DateTimeField()
-        self.assertRaisesWithRegexpMatch(
-            messages.EncodeError,
-            'Expected type datetime, got int: 20',
-            field.value_to_message, 20)
-
-    def test_value_to_message_with_time_zone(self):
-        time_zone = util.TimeZoneOffset(60 * 10)
-        field = message_types.DateTimeField()
-        message = field.value_to_message(
-            datetime.datetime(2033, 2, 4, 11, 22, 10, tzinfo=time_zone))
-        self.assertEqual(message_types.DateTimeMessage(milliseconds=1991128930000,
-                                                       time_zone_offset=600),
-                         message)
-
-    def test_value_from_message(self):
-        message = message_types.DateTimeMessage(milliseconds=1991128000000)
-        field = message_types.DateTimeField()
-        timestamp = field.value_from_message(message)
-        self.assertEqual(datetime.datetime(2033, 2, 4, 11, 6, 40),
-                         timestamp)
-
-    def test_value_from_message_bad_value(self):
-        field = message_types.DateTimeField()
-        self.assertRaisesWithRegexpMatch(
-            messages.DecodeError,
-            'Expected type DateTimeMessage, got VoidMessage: <VoidMessage>',
-            field.value_from_message, message_types.VoidMessage())
-
-    def test_value_from_message_with_time_zone(self):
-        message = message_types.DateTimeMessage(milliseconds=1991128000000,
-                                                time_zone_offset=300)
-        field = message_types.DateTimeField()
-        timestamp = field.value_from_message(message)
-        time_zone = util.TimeZoneOffset(60 * 5)
-        self.assertEqual(datetime.datetime(2033, 2, 4, 11, 6, 40, tzinfo=time_zone),
-                         timestamp)
-
-
 if __name__ == '__main__':
     unittest.main()

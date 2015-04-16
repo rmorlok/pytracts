@@ -503,7 +503,7 @@ class FieldTest(test_util.TestCase):
         """Test field with invalid variants."""
 
         def action(field_class):
-            if field_class is not message_types.DateTimeField:
+            if field_class is not messages.DateTimeISO8601Field and field_class is not messages.DateTimeMsIntegerField:
                 self.assertRaises(messages.InvalidVariantError,
                                   field_class,
                                   variant=messages.Variant.ENUM)

@@ -61,8 +61,10 @@ class MyMessage(messages.Message):
     a_nested = messages.MessageField(Nested)
     a_repeated = messages.IntegerField(repeated=True)
     a_repeated_float = messages.FloatField(repeated=True)
-    a_datetime = message_types.DateTimeField()
-    a_repeated_datetime = message_types.DateTimeField(repeated=True)
+    a_datetime_iso8601 = messages.DateTimeISO8601Field()
+    a_repeated_datetime_iso8601 = messages.DateTimeISO8601Field(repeated=True)
+    a_datetime_ms_integer = messages.DateTimeMsIntegerField()
+    a_repeated_datetime_ms_integer = messages.DateTimeMsIntegerField(repeated=True)
     a_custom = CustomField()
     a_repeated_custom = CustomField(repeated=True)
 
@@ -74,7 +76,7 @@ class ModuleInterfaceTest(test_util.ModuleInterfaceTest,
 
 # TODO(rafek): Convert this test to the compliance test in test_util.
 class ProtoDictTest(test_util.TestCase,
-                    test_util.ProtoConformanceTestBase):
+                    test_util.PytractsConformanceTestBase):
     """Test dictionary encoding and decoding."""
 
     PROTOLIB = to_dict
@@ -263,15 +265,30 @@ class ProtoDictTest(test_util.TestCase,
             _, decoded_variant = decoded.get_unrecognized_field_info('unknown_val')
             self.assertEquals(expected_variant, decoded_variant)
 
-    def testDecodeRepeatedDateTime(self):
-        message = to_dict.decode_message(MyMessage, {"a_repeated_datetime": [
+    def testDecodeRepeatedDateTimeIso8601(self):
+        message = to_dict.decode_message(MyMessage, {"a_repeated_datetime_iso8601": [
             datetime.datetime(2012, 9, 30, 15, 31, 50, 262000),
             datetime.datetime(2010, 1, 21, 9, 52),
             datetime.datetime(2000, 1, 1, 1, 0, 59, 999999)
         ]})
 
         expected_message = MyMessage(
-            a_repeated_datetime=[
+            a_repeated_datetime_iso8601=[
+                datetime.datetime(2012, 9, 30, 15, 31, 50, 262000),
+                datetime.datetime(2010, 1, 21, 9, 52),
+                datetime.datetime(2000, 1, 1, 1, 0, 59, 999999)])
+
+        self.assertEquals(expected_message, message)
+
+    def testDecodeRepeatedDateTimeMsInteger(self):
+        message = to_dict.decode_message(MyMessage, {"a_repeated_datetime_ms_integer": [
+            datetime.datetime(2012, 9, 30, 15, 31, 50, 262000),
+            datetime.datetime(2010, 1, 21, 9, 52),
+            datetime.datetime(2000, 1, 1, 1, 0, 59, 999999)
+        ]})
+
+        expected_message = MyMessage(
+            a_repeated_datetime_ms_integer=[
                 datetime.datetime(2012, 9, 30, 15, 31, 50, 262000),
                 datetime.datetime(2010, 1, 21, 9, 52),
                 datetime.datetime(2000, 1, 1, 1, 0, 59, 999999)])

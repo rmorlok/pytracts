@@ -92,6 +92,11 @@ import re
 import urllib
 import urlparse
 
+try:
+    import iso8601
+except ImportError:
+    import _local_iso8601 as iso8601
+
 from . import message_types
 from . import messages
 from . import util
@@ -421,11 +426,20 @@ class URLEncodedRequestBuilder(object):
         for value in values:
             if isinstance(field, messages.IntegerField):
                 converted_value = int(value)
-            elif isinstance(field, message_types.DateTimeField):
+            elif isinstance(field, messages.DateTimeISO8601Field):
                 try:
-                    converted_value = util.decode_datetime(value)
-                except ValueError, e:
-                    raise messages.DecodeError(e)
+                    converted_value = iso8601.parse_date(value, default_timezone=None)
+                except iso8601.ParseError, err:
+                    raise messages.DecodeError(err)
+
+            elif isinstance(field, messages.DateTimeMsIntegerField):
+                try:
+                    converted_value = util.ms_to_datetime(int(value))
+                except TypeError, err:
+                    raise messages.DecodeError(err)
+                except ValueError, err:
+                    raise messages.DecodeError(err)
+
             elif isinstance(field, messages.MessageField):
                 # Just make sure it's instantiated.  Assignment to field or
                 # appending to list is done in __get_or_create_path.
@@ -513,9 +527,11 @@ def encode_message(message, prefix=''):
                 else:
                     field_name = prefix + field.name
 
-                if isinstance(field, message_types.DateTimeField):
-                    # DateTimeField stores its data as a RFC 3339 compliant string.
+                if isinstance(field, messages.DateTimeISO8601Field):
+                    # DateTimeField stores its data as a ISO8601 compliant string.
                     parameters.append((field_name, item.isoformat()))
+                elif isinstance(field, messages.DateTimeMsIntegerField):
+                    parameters.append((field_name, util.datetime_to_ms(item)))
                 elif isinstance(field, messages.MessageField):
                     # Message fields must be recursed in to in order to construct
                     # their component parameter values.

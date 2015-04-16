@@ -49,6 +49,12 @@ import sys
 import traceback
 import types
 import weakref
+import datetime
+
+try:
+    import iso8601
+except ImportError:
+    import _local_iso8601 as iso8601
 
 from . import util
 
@@ -68,6 +74,8 @@ __all__ = ['MAX_ENUM_VALUE',
            'EnumField',
            'DictField',
            'UntypedField',
+           'DateTimeISO8601Field',
+           'DateTimeMsIntegerField',
            'find_definition',
 
            'Error',
@@ -1473,6 +1481,34 @@ class BooleanField(Field):
     DEFAULT_VARIANT = Variant.BOOL
 
     type = bool
+
+
+class DateTimeISO8601Field(Field):
+    """
+    Field definition for date fields encoded as ISO8601 string values.
+
+    Encoding is done for JSON and URLs, dicts are left as native Python datetimes
+    """
+
+    VARIANTS = frozenset([Variant.STRING])
+
+    DEFAULT_VARIANT = Variant.STRING
+
+    type = datetime.datetime
+
+
+class DateTimeMsIntegerField(Field):
+    """
+    Field definition for date fields encoded as milliseconds since the epoch integer values.
+
+    Encoding is done for JSON and URLs, dicts are left as native Python datetimes
+    """
+
+    VARIANTS = frozenset([Variant.INT32, Variant.INT64, Variant.UINT32, Variant.UINT64])
+
+    DEFAULT_VARIANT = Variant.INT32
+
+    type = datetime.datetime
 
 
 class BytesField(Field):

@@ -44,7 +44,9 @@ __all__ = [
     'TimeZoneOffset',
     'curry',
     'wrapping',
-    'DEBUG'
+    'DEBUG',
+    'datetime_to_ms',
+    'ms_to_datetime'
 ]
 
 
@@ -433,6 +435,24 @@ class TimeZoneOffset(datetime.tzinfo):
           A timedelta of 0.
         """
         return datetime.timedelta(0)
+
+
+def datetime_to_ms(dt):
+    if dt.tzinfo is None:
+        time_zone_offset = 0
+        local_epoch = datetime.datetime.utcfromtimestamp(0)
+    else:
+        time_zone_offset = dt.tzinfo.utcoffset(dt).total_seconds()
+        # Determine Jan 1, 1970 local time.
+        local_epoch = datetime.datetime.fromtimestamp(-time_zone_offset,
+                                                      tz=dt.tzinfo)
+    delta = dt - local_epoch
+
+    return int(delta.total_seconds() * 1000)
+
+
+def ms_to_datetime(ms):
+    return datetime.datetime.utcfromtimestamp(ms / 1000.0)
 
 
 def decode_datetime(encoded_datetime):

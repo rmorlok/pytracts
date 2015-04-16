@@ -20,9 +20,9 @@ from tests import test_util
 
 __author__ = 'rafek@google.com (Rafe Kaplan)'
 
-import datetime
 import sys
 import unittest
+from datetime import datetime, date, time
 
 from pytracts import message_types
 from pytracts import messages
@@ -63,8 +63,10 @@ class MyMessage(messages.Message):
     a_nested = messages.MessageField(Nested)
     a_repeated = messages.IntegerField(repeated=True)
     a_repeated_float = messages.FloatField(repeated=True)
-    a_datetime = message_types.DateTimeField()
-    a_repeated_datetime = message_types.DateTimeField(repeated=True)
+    a_datetime_iso8601 = messages.DateTimeISO8601Field()
+    a_repeated_datetime_iso8601 = messages.DateTimeISO8601Field(repeated=True)
+    a_datetime_ms_integer = messages.DateTimeMsIntegerField()
+    a_repeated_datetime_ms_integer = messages.DateTimeMsIntegerField(repeated=True)
     a_custom = CustomField()
     a_repeated_custom = CustomField(repeated=True)
 
@@ -76,7 +78,7 @@ class ModuleInterfaceTest(test_util.ModuleInterfaceTest,
 
 # TODO(rafek): Convert this test to the compliance test in test_util.
 class ProtojsonTest(test_util.TestCase,
-                    test_util.ProtoConformanceTestBase):
+                    test_util.PytractsConformanceTestBase):
     """Test JSON encoding and decoding."""
 
     PROTOLIB = to_json
@@ -306,36 +308,74 @@ class ProtojsonTest(test_util.TestCase,
                 ('2012-09-30T15:31:50.262', (2012, 9, 30, 15, 31, 50, 262000)),
                 ('2012-09-30T15:31:50', (2012, 9, 30, 15, 31, 50, 0))):
             message = to_json.decode_message(
-                MyMessage, '{"a_datetime": "%s"}' % datetime_string)
+                MyMessage, '{"a_datetime_iso8601": "%s"}' % datetime_string)
             expected_message = MyMessage(
-                a_datetime=datetime.datetime(*datetime_vals))
+                a_datetime_iso8601=datetime(*datetime_vals))
 
             self.assertEquals(expected_message, message)
 
     def testDecodeInvalidDateTime(self):
         self.assertRaises(messages.DecodeError, to_json.decode_message,
-                          MyMessage, '{"a_datetime": "invalid"}')
+                          MyMessage, '{"a_datetime_iso8601": "invalid"}')
 
-    def testEncodeDateTime(self):
+    def testEncodeDateTimeISO8601(self):
         for datetime_string, datetime_vals in (
                 ('2012-09-30T15:31:50.262000', (2012, 9, 30, 15, 31, 50, 262000)),
                 ('2012-09-30T15:31:50.262123', (2012, 9, 30, 15, 31, 50, 262123)),
                 ('2012-09-30T15:31:50', (2012, 9, 30, 15, 31, 50, 0))):
             decoded_message = to_json.encode_message(
-                MyMessage(a_datetime=datetime.datetime(*datetime_vals)))
-            expected_decoding = '{"a_datetime": "%s"}' % datetime_string
+                MyMessage(a_datetime_iso8601=datetime(*datetime_vals)))
+            expected_decoding = '{"a_datetime_iso8601": "%s"}' % datetime_string
             self.CompareEncoded(expected_decoding, decoded_message)
 
-    def testDecodeRepeatedDateTime(self):
+    def testDecodeRepeatedDateTimeISO8601(self):
         message = to_json.decode_message(
             MyMessage,
-            '{"a_repeated_datetime": ["2012-09-30T15:31:50.262", '
+            '{"a_repeated_datetime_iso8601": ["2012-09-30T15:31:50.262", '
             '"2010-01-21T09:52:00", "2000-01-01T01:00:59.999999"]}')
         expected_message = MyMessage(
-            a_repeated_datetime=[
-                datetime.datetime(2012, 9, 30, 15, 31, 50, 262000),
-                datetime.datetime(2010, 1, 21, 9, 52),
-                datetime.datetime(2000, 1, 1, 1, 0, 59, 999999)])
+            a_repeated_datetime_iso8601=[
+                datetime(2012, 9, 30, 15, 31, 50, 262000),
+                datetime(2010, 1, 21, 9, 52),
+                datetime(2000, 1, 1, 1, 0, 59, 999999)])
+
+        self.assertEquals(expected_message, message)
+
+    def testDecodeDateTimeMsInteger(self):
+        for datetime_int, datetime_vals in (
+                (1349019110262, (2012, 9, 30, 15, 31, 50, 262000)),
+                (1349019110000, (2012, 9, 30, 15, 31, 50, 0))):
+            message = to_json.decode_message(
+                MyMessage, '{"a_datetime_ms_integer": %d}' % datetime_int)
+            expected_message = MyMessage(
+                a_datetime_ms_integer=datetime(*datetime_vals))
+
+            self.assertEquals(expected_message, message)
+
+    def testDecodeInvalidDateTimeMsInteger(self):
+        self.assertRaises(messages.DecodeError, to_json.decode_message,
+                          MyMessage, '{"a_datetime_ms_integer": "invalid"}')
+
+    def testEncodeDateTimeMsInteger(self):
+        for datetime_int, datetime_vals in (
+                (1349019110262, (2012, 9, 30, 15, 31, 50, 262000)),
+                (1349019110262, (2012, 9, 30, 15, 31, 50, 262123)),
+                (1349019110000, (2012, 9, 30, 15, 31, 50, 0))):
+            decoded_message = to_json.encode_message(
+                MyMessage(a_datetime_ms_integer=datetime(*datetime_vals)))
+            expected_decoding = '{"a_datetime_ms_integer": %d}' % datetime_int
+            self.CompareEncoded(expected_decoding, decoded_message)
+
+    def testDecodeRepeatedDateTimeMsInteger(self):
+        message = to_json.decode_message(
+            MyMessage,
+            '{"a_repeated_datetime_ms_integer": [1349019110262, '
+            '1264067520000, 946688459999]}')
+        expected_message = MyMessage(
+            a_repeated_datetime_ms_integer=[
+                datetime(2012, 9, 30, 15, 31, 50, 262000),
+                datetime(2010, 1, 21, 9, 52),
+                datetime(2000, 1, 1, 1, 0, 59, 999000)])
 
         self.assertEquals(expected_message, message)
 
@@ -545,6 +585,14 @@ class ProtojsonTest(test_util.TestCase,
         gb.items = {'a': 'b', 'foo': 'bar'}
         self.assertEquals('{"items": {"a": "b", "foo": "bar"}, "item_count": 123}', to_json.encode_message(gb))
 
+        gb = GrabBag()
+        gb.items = {'a': datetime(2010, 11, 13, 14, 15, 16), 'b': date(2009, 10, 11), 'c': time(1, 2, 3)}
+        self.assertEquals('{"items": {"a": "2010-11-13T14:15:16", "c": "01:02:03", "b": "2009-10-11"}}', to_json.encode_message(gb))
+
+        gb = GrabBag()
+        gb.items = {'nested': {'a': datetime(2010, 11, 13, 14, 15, 16), 'b': date(2009, 10, 11), 'c': time(1, 2, 3)}}
+        self.assertEquals('{"items": {"nested": {"a": "2010-11-13T14:15:16", "c": "01:02:03", "b": "2009-10-11"}}}', to_json.encode_message(gb))
+
     def test_dict_field_decode(self):
         class GrabBag(messages.Message):
             item_count = messages.IntegerField()
@@ -566,6 +614,13 @@ class ProtojsonTest(test_util.TestCase,
         gb.item_count = 123
         gb.items = {'a': 'b', 'foo': 'bar'}
         self.assertEquals(gb, to_json.decode_message(GrabBag, '{"items": {"a": "b", "foo": "bar"}, "item_count": 123}'))
+
+        gb = GrabBag()
+        gb.items = {u'a': u"2010-11-13T14:15:16", u'b': u"01:02:03", u'c': u"2009-10-11"}
+
+        # Decode doesn't reverse dates in arbitrary dicts
+        self.assertEquals(gb, to_json.decode_message(GrabBag, '{"items": {"a": "2010-11-13T14:15:16", "b": "01:02:03", "c": "2009-10-11"}}'))
+
 
 
 class CustomJsonEncoder(to_json.JsonEncoder):

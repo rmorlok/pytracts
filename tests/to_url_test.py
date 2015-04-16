@@ -23,6 +23,7 @@ __author__ = 'rafek@google.com (Rafe Kaplan)'
 import urlparse
 import unittest
 import urllib
+from datetime import datetime
 
 from pytracts import message_types
 from pytracts import messages
@@ -234,7 +235,7 @@ class URLEncodedRequestBuilderTest(test_util.TestCase):
 
 
 class ProtourlencodeConformanceTest(test_util.TestCase,
-                                    test_util.ProtoConformanceTestBase):
+                                    test_util.PytractsConformanceTestBase):
     PROTOLIB = to_url
 
     encoded_partial = urllib.urlencode(sorted([('double_value', 1.23),
@@ -340,13 +341,40 @@ class ProtourlencodeConformanceTest(test_util.TestCase,
         self.assertEquals((['400', 'test', '123.456'], messages.Variant.STRING),
                           decoded2.get_unrecognized_field_info('repeated'))
 
-    def testDecodeInvalidDateTime(self):
+    def testDecodeDateTimeIso8601(self):
         class MyMessage(messages.Message):
-            a_datetime = message_types.DateTimeField()
+            a_datetime = messages.DateTimeISO8601Field()
+
+        m = to_url.decode_message(MyMessage, 'a_datetime=2012-09-30T15:31:50.262000')
+        self.assertEquals(datetime(2012, 9, 30, 15, 31, 50, 262000), m.a_datetime)
+
+        m = to_url.decode_message(MyMessage, 'a_datetime=2012-09-30T15%3A31%3A50.262000')
+        self.assertEquals(datetime(2012, 9, 30, 15, 31, 50, 262000), m.a_datetime)
+
+
+    def testDecodeInvalidDateTimeIso8601(self):
+        class MyMessage(messages.Message):
+            a_datetime = messages.DateTimeISO8601Field()
 
         self.assertRaises(messages.DecodeError, to_url.decode_message,
                           MyMessage, 'a_datetime=invalid')
 
+    def testDecodeDateTimeMsInteger(self):
+        class MyMessage(messages.Message):
+            a_datetime = messages.DateTimeMsIntegerField()
+
+        m = to_url.decode_message(MyMessage, 'a_datetime=1349019110262')
+        self.assertEquals(datetime(2012, 9, 30, 15, 31, 50, 262000), m.a_datetime)
+
+        m = to_url.decode_message(MyMessage, 'a_datetime=1349019110262')
+        self.assertEquals(datetime(2012, 9, 30, 15, 31, 50, 262000), m.a_datetime)
+
+    def testDecodeInvalidDateTimeMsInteger(self):
+        class MyMessage(messages.Message):
+            a_datetime = messages.DateTimeISO8601Field()
+
+        self.assertRaises(messages.DecodeError, to_url.decode_message,
+                          MyMessage, 'a_datetime=invalid')
 
     def test_decode_message_from_url(self):
         class AnimalSounds(messages.Message):

@@ -32,7 +32,7 @@ py_version = platform.python_version()
 if py_version < '2.6':
   REQUIRED_PACKAGES.append('simplejson')
 
-_PYTRACTS_VERSION = '0.6.0'
+_PYTRACTS_VERSION = '0.8.0'
 
 setuptools.setup(
     name='pytracts',
