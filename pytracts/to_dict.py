@@ -151,7 +151,7 @@ def decode_dictionary(message_type, dictionary):
                     valid_value.append(__decode_field(field, item))
 
                 if field.repeated:
-                    existing_value = getattr(message, field.name)
+                    existing_value = getattr(message, field.alias)
                     setattr(message, field.alias, valid_value)
                 else:
                     setattr(message, field.alias, valid_value[-1])

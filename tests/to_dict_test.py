@@ -358,6 +358,33 @@ class ProtoDictTest(test_util.TestCase,
 
         self.assertEquals({"robert": "smith", "ryan": "morlok"}, to_dict.encode_message(f))
 
+    def test_explicit_field_name_repeated(self):
+        class Foo(messages.Message):
+            bob = messages.StringField(name="robert", repeated=True)
+            ryan = messages.StringField()
+
+        m = to_dict.decode_message(Foo, {"robert": ["smith", "jones"], "ryan": "morlok"})
+
+        self.assertEquals(["smith", "jones"], m.bob)
+        self.assertEquals("morlok", m.ryan)
+
+        f = Foo()
+        f.bob = ["smith", "jones"]
+        f.ryan = "morlok"
+
+        self.assertEquals({"robert": ["smith", "jones"], "ryan": "morlok"}, to_dict.encode_message(f))
+
+    def test_explicit_field_name_round_trip(self):
+        class Foo(messages.Message):
+            bob = messages.StringField(name="robert")
+            ryan = messages.StringField()
+
+        f = Foo(bob="smith", ryan="morlok")
+        m = to_dict.decode_message(Foo, to_dict.encode_message(f))
+
+        self.assertEquals("smith", m.bob)
+        self.assertEquals("morlok", m.ryan)
+
     def test_assigned_values_rendered(self):
         class Animals(messages.Message):
             bird = messages.StringField(repeated=True)
