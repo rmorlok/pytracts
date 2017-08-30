@@ -2,6 +2,7 @@
 #
 # Copyright 2011 Google Inc.
 # Copyright 2015 Docalytics Inc.
+# Copyright 2017 Morlok Technologies, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -16,10 +17,10 @@
 # limitations under the License.
 #
 
-"""Main module for ProtoPy package."""
+"""Main module for pytracts package."""
 
-__author__ = 'Ryan Morlok (ryan@docalytics.com)'
-__version__ = '1.0'
+__author__ = 'Ryan Morlok (ryan@morlok.com)'
+__version__ = '1.1'
 
 import logging
 
@@ -62,8 +63,8 @@ def endpoint(_wrapped_function=None, lenient=False, **kwargs):
         raise IndexError("Cannot have more than one mapping for request body")
 
     if len(kwargs) == 1:
-        body_param_name = kwargs.keys()[0]
-        body_param_type = kwargs.values()[0]
+        body_param_name = list(kwargs.keys())[0]
+        body_param_type = list(kwargs.values())[0]
 
         if not isinstance(body_param_type, messages.Message.__metaclass__):
             raise TypeError("Body must be of type pytracts.messages.Message")
@@ -127,7 +128,7 @@ def endpoint(_wrapped_function=None, lenient=False, **kwargs):
             if response_code:
                 self.response.status_int = response_code
 
-            for k, v in headers.iteritems():
+            for k, v in headers.items():
                 self.response.headers[k] = v
 
         return wrapper

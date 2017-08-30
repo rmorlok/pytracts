@@ -92,6 +92,15 @@ __all__ = ['MAX_ENUM_VALUE',
            'DefinitionNotFoundError',
 ]
 
+if sys.version_info >= (3, 0, 0):
+    unicode = str
+    basestring = str
+    long = int
+
+    def cmp(a, b):
+        return (a > b) - (a < b)
+
+
 
 # TODO(rafek): Add extended module test to ensure all exceptions
 # in services extends Error.
@@ -240,7 +249,7 @@ class _DefinitionClass(type):
           class MyMessage(Message):
             ...
 
-          >>> MyMessage.definition_name()
+          >> MyMessage.definition_name()
           some.alternate.package.MyMessage
 
         Returns:
@@ -352,7 +361,7 @@ class _EnumClass(_DefinitionClass):
         Yields:
           Enumeration instances of the Enum class in arbitrary order.
         """
-        return cls.__by_number.itervalues()
+        return cls.__by_number.values()
 
     def names(cls):
         """Get all names for Enum.
@@ -360,7 +369,7 @@ class _EnumClass(_DefinitionClass):
         Returns:
           An iterator for names of the enumeration in arbitrary order.
         """
-        return cls.__by_name.iterkeys()
+        return cls.__by_name.keys()
 
     def numbers(cls):
         """Get all numbers for Enum.
@@ -368,7 +377,7 @@ class _EnumClass(_DefinitionClass):
         Returns:
           An iterator for all numbers of the enumeration in arbitrary order.
         """
-        return cls.__by_number.iterkeys()
+        return cls.__by_number.keys()
 
     def lookup_by_name(cls, name):
         """Look up Enum by name.
@@ -787,7 +796,7 @@ class Message(object):
                         else:
                             message_value = field.value_to_message(value)
                             message_value.check_initialized()
-                except ValidationError, err:
+                except ValidationError as err:
                     if not hasattr(err, 'message_name'):
                         err.message_name = type(self).__name__
                     raise
@@ -978,7 +987,7 @@ class Message(object):
           my_message.string_value = u'A string'
 
           print my_message
-          >>> <MyMessage
+          >> <MyMessage
           ...  integer_value: 42
           ...  string_value: u'A string'>
 
@@ -1195,7 +1204,7 @@ class Field(object):
         if default is not None:
             try:
                 self.validate_default(default)
-            except ValidationError, err:
+            except ValidationError as err:
                 try:
                     err_name = name or self.name
                 except AttributeError:
@@ -1540,7 +1549,7 @@ class StringField(Field):
         if isinstance(value, str):
             try:
                 unicode(value)
-            except UnicodeDecodeError, err:
+            except UnicodeDecodeError as err:
                 try:
                     name = self.name
                 except AttributeError:

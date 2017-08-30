@@ -89,8 +89,13 @@ Helper classes:
 __author__ = 'rafek@google.com (Rafe Kaplan)'
 
 import re
+import sys
 import urllib
-import urlparse
+
+try:
+    from urlparse import urlparse, parse_qs
+except ImportError:
+    from urllib.parse import urlparse, parse_qs
 
 try:
     import iso8601
@@ -107,6 +112,14 @@ __all__ = ['CONTENT_TYPE',
            'decode_message',
            'decode_message_from_url',
 ]
+
+if sys.version_info >= (3, 0, 0):
+    unicode = str
+    basestring = str
+    long = int
+
+    def cmp(a, b):
+        return (a > b) - (a < b)
 
 CONTENT_TYPE = 'application/x-www-form-urlencoded'
 
@@ -429,15 +442,15 @@ class URLEncodedRequestBuilder(object):
             elif isinstance(field, messages.DateTimeISO8601Field):
                 try:
                     converted_value = iso8601.parse_date(value, default_timezone=None)
-                except iso8601.ParseError, err:
+                except iso8601.ParseError as err:
                     raise messages.DecodeError(err)
 
             elif isinstance(field, messages.DateTimeMsIntegerField):
                 try:
                     converted_value = util.ms_to_datetime(int(value))
-                except TypeError, err:
+                except TypeError as err:
                     raise messages.DecodeError(err)
-                except ValueError, err:
+                except ValueError as err:
                     raise messages.DecodeError(err)
 
             elif isinstance(field, messages.MessageField):
@@ -574,7 +587,7 @@ def decode_message(message_type, encoded_message, **kwargs):
     """
     message = message_type()
     builder = URLEncodedRequestBuilder(message, **kwargs)
-    arguments = urlparse.parse_qs(encoded_message, keep_blank_values=True)
+    arguments = parse_qs(encoded_message, keep_blank_values=True)
     for argument, values in sorted(arguments.iteritems()):
         added = builder.add_parameter(argument, values)
         # Save off any unknown values, so they're still accessible.
@@ -596,4 +609,4 @@ def decode_message_from_url(message_type, url, **kwargs):
 
     :return: the message
     """
-    return decode_message(message_type=message_type, encoded_message=urlparse.urlparse(url).query, **kwargs)
+    return decode_message(message_type=message_type, encoded_message=urlparse(url).query, **kwargs)

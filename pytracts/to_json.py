@@ -27,7 +27,7 @@ Public functions:
 
 __author__ = 'rafek@google.com (Rafe Kaplan)'
 
-import cStringIO
+import sys
 import base64
 import logging
 import datetime
@@ -49,6 +49,14 @@ __all__ = [
     'decode_message',
     'JsonEncoder',
 ]
+
+if sys.version_info >= (3, 0, 0):
+    unicode = str
+    basestring = str
+    long = int
+
+    def cmp(a, b):
+        return (a > b) - (a < b)
 
 
 def _load_json_module():
@@ -78,7 +86,7 @@ def _load_json_module():
                 raise ImportError(message)
             else:
                 return module
-        except ImportError, err:
+        except ImportError as err:
             if not first_import_error:
                 first_import_error = err
 
@@ -341,21 +349,21 @@ class JsonEncoder(object):
         elif isinstance(field, messages.BytesField):
             try:
                 return base64.b64decode(value)
-            except TypeError, err:
+            except TypeError as err:
                 raise messages.DecodeError('Base64 decoding error: %s' % err)
 
         elif isinstance(field, messages.DateTimeISO8601Field):
             try:
                 return iso8601.parse_date(value, default_timezone=None)
-            except iso8601.ParseError, err:
+            except iso8601.ParseError as err:
                 raise messages.DecodeError(err)
 
         elif isinstance(field, messages.DateTimeMsIntegerField):
             try:
                 return util.ms_to_datetime(value)
-            except TypeError, err:
+            except TypeError as err:
                 raise messages.DecodeError(err)
-            except ValueError, err:
+            except ValueError as err:
                 raise messages.DecodeError(err)
 
         elif (isinstance(field, messages.MessageField) and
