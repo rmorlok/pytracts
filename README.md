@@ -103,8 +103,7 @@ print to_json.encode_message(bob)
 ```python
 import webapp2
 
-import pytracts
-from pytracts import messages
+from pytracts import messages, webapp2 as pt
 
 class TeamMessage(messages.Message):
     name = messages.StringField()
@@ -123,7 +122,7 @@ badgers = TeamMessage(name='Wisconsin', colors=['cardinal', 'gold'], masot='Buck
 class TeamHandler(webapp2.RequestHandler):
     
     # Annotate endpoints to automatically serialize to JSON
-    @pytracts.endpoint
+    @pt.endpoint
     def get_teams(self):
         
         response = TeamsResponseMessage()
@@ -133,7 +132,7 @@ class TeamHandler(webapp2.RequestHandler):
         return response
 
     # Use Webapp2 exceptions for other status codes
-    @pytracts.endpoint
+    @pt.endpoint
     def get_team(self, team_id):
         if team_id == 'gophers':
             return gophers
@@ -143,7 +142,7 @@ class TeamHandler(webapp2.RequestHandler):
             raise webapp2.exc.HTTPNotFound()
     
     # Take a message from the JSON body of the request
-    @pytracts.endpoint(team_details=TeamMessage)
+    @pt.endpoint(team_details=TeamMessage)
     def create_team(self, team_details):
         # Create the team based on details 
 

@@ -133,7 +133,7 @@ def decode_dictionary(message_type, dictionary):
     """
     message = message_type()
     try:
-        for key, value in dictionary.iteritems():
+        for key, value in dictionary.items():
             try:
                 field = message.field_by_name(key)
             except KeyError:

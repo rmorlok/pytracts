@@ -25,19 +25,20 @@ import setuptools
 # Configure the required packages and scripts to install, depending on
 # Python version and OS.
 REQUIRED_PACKAGES = [
-    'ez_setup==0.9'
-    ]
+    'ez_setup==0.9',
+    'six==1.10.0'
+]
 
 py_version = platform.python_version()
 if py_version < '2.6':
   REQUIRED_PACKAGES.append('simplejson')
 
-_PYTRACTS_VERSION = '0.8.0'
+_PYTRACTS_VERSION = '2.0.0'
 
 setuptools.setup(
     name='pytracts',
     version=_PYTRACTS_VERSION,
-    description='Library to define data contracts for JSON and build RESTful services with Webapp2',
+    description='Library to define data contracts for JSON and build RESTful services with Webapp2 or Flask',
     url='https://github.com/rmorlok/pytracts',
     author='Ryan Morlok',
     author_email='ryan.morlok@morlok.com.com',

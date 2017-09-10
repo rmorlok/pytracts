@@ -50,6 +50,7 @@ import traceback
 import types
 import weakref
 import datetime
+from six import with_metaclass
 
 try:
     import iso8601
@@ -164,7 +165,7 @@ class ValidationError(Error):
 # Attributes that are reserved by a class definition that
 # may not be used by either Enum or Message class definitions.
 _RESERVED_ATTRIBUTE_NAMES = frozenset(
-    ['__module__', '__doc__'])
+    ['__module__', '__doc__', '__qualname__'])
 
 _POST_INIT_FIELD_ATTRIBUTE_NAMES = frozenset(
     ['name',
@@ -317,7 +318,7 @@ class _EnumClass(_DefinitionClass):
         # Enum base class does not need to be initialized or locked.
         if bases != (object,):
             # Replace integer with number.
-            for attribute, value in dct.iteritems():
+            for attribute, value in dct.items():
 
                 # Module will be in every enum class.
                 if attribute in _RESERVED_ATTRIBUTE_NAMES:
@@ -405,12 +406,10 @@ class _EnumClass(_DefinitionClass):
         return len(cls.__by_name)
 
 
-class Enum(object):
+class Enum(with_metaclass(_EnumClass, object)):
     """Base class for all enumerated types."""
 
-    __metaclass__ = _EnumClass
-
-    __slots__ = set(('name', 'number'))
+    __slots__ = {'name', 'number'}
 
     def __new__(cls, index):
         """Acts as look-up routine after class is initialized.
@@ -585,7 +584,7 @@ class _MessageClass(_DefinitionClass):
 
             enums = []
             messages = []
-            # Must not use iteritems because this loop will change the state of dct.
+
             for key, field in dct.items():
 
                 if key in _RESERVED_ATTRIBUTE_NAMES:
@@ -639,7 +638,7 @@ class _MessageClass(_DefinitionClass):
     def __init__(cls, name, bases, dct):
         """Initializer required to assign references to new class."""
         if bases != (object,):
-            for value in dct.itervalues():
+            for value in dct.values():
                 if isinstance(value, _DefinitionClass) and not value is Message:
                     value._message_definition = weakref.ref(cls)
 
@@ -649,7 +648,7 @@ class _MessageClass(_DefinitionClass):
         _DefinitionClass.__init__(cls, name, bases, dct)
 
 
-class Message(object):
+class Message(with_metaclass(_MessageClass, object)):
     """Base class for user defined message objects.
 
     Used to define messages for efficient transmission across network or
@@ -716,8 +715,6 @@ class Message(object):
       order.check_initialized()
     """
 
-    __metaclass__ = _MessageClass
-
     # Mapping of names (actual value that's used for encoding) to fields
     __by_name = {}
 
@@ -757,7 +754,7 @@ class Message(object):
         self.__unrecognized_fields = {}
 
         assigned = set()
-        for name, value in kwargs.iteritems():
+        for name, value in kwargs.items():
             setattr(self, name, value)
             assigned.add(name)
 
@@ -779,7 +776,7 @@ class Message(object):
         Raises:
           ValidationError: If message is not initialized.
         """
-        for name, field in self.__by_name.iteritems():
+        for name, field in self.__by_name.items():
             value = getattr(self, field.alias)
             if value is None:
                 if field.required:
@@ -823,7 +820,7 @@ class Message(object):
         Returns:
           Iterator over all values in arbitrary order.
         """
-        return cls.__by_name.itervalues()
+        return cls.__by_name.values()
 
     @classmethod
     def field_by_name(cls, name):
@@ -1130,16 +1127,20 @@ class FieldList(list):
         self.__notify_message_of_value_change()
         return ret_val
 
+
+class _FieldMeta(type):
+
+    def __init__(cls, name, bases, dct):
+        getattr(cls, '_Field__variant_to_type').update(
+            (variant, cls) for variant in dct.get('VARIANTS', []))
+        type.__init__(cls, name, bases, dct)
+
+
 # TODO(rafek): Prevent additional field subclasses.
-class Field(object):
+class Field(with_metaclass(_FieldMeta, object)):
     __variant_to_type = {}
 
-    class __metaclass__(type):
 
-        def __init__(cls, name, bases, dct):
-            getattr(cls, '_Field__variant_to_type').update(
-                (variant, cls) for variant in dct.get('VARIANTS', []))
-            type.__init__(cls, name, bases, dct)
 
     __initialized = False
 

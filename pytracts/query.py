@@ -6,8 +6,7 @@ try:
 except ImportError:
     import _local_iso8601 as iso8601
 
-from webob import exc
-from pytracts import messages, to_url, util
+from pytracts import messages, to_url, util, exceptions
 
 #
 # Decorators used to make handlers more explicit. Enable things like declarative, strongly typed query string parameters.
@@ -60,10 +59,10 @@ class base_query_parameter(object):
         self.default = default
 
     def raise_bad_request_value_missing(self):
-        raise exc.HTTPBadRequest(self.message_missing or ("Required query paramter '%s' is missing." % self.name))
+        raise exceptions.HTTPBadRequest(self.message_missing or ("Required query paramter '%s' is missing." % self.name))
 
     def raise_bad_request_bad_value(self):
-        raise exc.HTTPBadRequest(self.message_bad_value or ("Value for parameter '%s' is invalid." % self.name))
+        raise exceptions.HTTPBadRequest(self.message_bad_value or ("Value for parameter '%s' is invalid." % self.name))
 
     def __call__(self, f):
         """
@@ -322,7 +321,7 @@ def message(*args, **kwargs):
     else:
         raise IndexError("Must specify query parameter message type")
 
-    if not isinstance(message_param_type, messages.Message.__metaclass__):
+    if not isinstance(message_param_type, messages.Message):
         raise TypeError("Message must be of type pytracts.messages.Message")
 
     def get_wrapper(message_param_name, message_param_type, f):
@@ -336,7 +335,7 @@ def message(*args, **kwargs):
                     arguments += (m,)
 
             except (ValueError, messages.Error) as error:
-                raise exc.HTTPBadRequest(detail=(error.message or "Could not decode query parameters"))
+                raise exceptions.HTTPBadRequest(detail=(error.message or "Could not decode query parameters"))
 
             return f(self, *arguments, **keywords)
 

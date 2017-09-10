@@ -588,7 +588,7 @@ def decode_message(message_type, encoded_message, **kwargs):
     message = message_type()
     builder = URLEncodedRequestBuilder(message, **kwargs)
     arguments = parse_qs(encoded_message, keep_blank_values=True)
-    for argument, values in sorted(arguments.iteritems()):
+    for argument, values in sorted(arguments.items()):
         added = builder.add_parameter(argument, values)
         # Save off any unknown values, so they're still accessible.
         if not added:

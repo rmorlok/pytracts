@@ -171,7 +171,7 @@ class JsonEncoder(object):
 
         d = d.copy()
 
-        for key in d.iterkeys():
+        for key in d.keys():
             if isinstance(d[key], datetime.datetime) or isinstance(d[key], datetime.date) or isinstance(d[key], datetime.time):
                 d[key] = d[key].isoformat()
             if isinstance(d[key], dict):
@@ -293,7 +293,7 @@ class JsonEncoder(object):
             is as parsed from JSON.  Nested objects will also be dictionaries.
         """
         message = message_type()
-        for key, value in dictionary.iteritems():
+        for key, value in dictionary.items():
             try:
                 field = message.field_by_name(key)
             except KeyError:
