@@ -21,12 +21,21 @@ from tests import test_util
 __author__ = 'rafek@google.com (Rafe Kaplan)'
 
 import datetime
-import new
 import random
 import sys
 import unittest
+import types
 
 from pytracts import util
+
+
+if sys.version_info >= (3, 0, 0):
+    unicode = str
+    basestring = str
+    long = int
+
+    def cmp(a, b):
+        return (a > b) - (a < b)
 
 
 class ModuleInterfaceTest(test_util.ModuleInterfaceTest,
@@ -255,7 +264,7 @@ class GetPackageForModuleTest(test_util.TestCase):
     def CreateModule(self, name, file_name=None):
         if file_name is None:
             file_name = '%s.py' % name
-        module = new.module(name)
+        module = types.ModuleType(name)
         sys.modules[name] = module
         return module
 

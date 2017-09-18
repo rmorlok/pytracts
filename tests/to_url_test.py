@@ -20,7 +20,12 @@ from tests import test_util
 
 __author__ = 'rafek@google.com (Rafe Kaplan)'
 
-import urlparse
+try:
+    from urlparse import urlparse, parse_qs, urlencode
+except ImportError:
+    from urllib.parse import urlparse, parse_qs, urlencode
+
+
 import unittest
 import urllib
 from datetime import datetime
@@ -238,67 +243,67 @@ class ProtourlencodeConformanceTest(test_util.TestCase,
                                     test_util.PytractsConformanceTestBase):
     PROTOLIB = to_url
 
-    encoded_partial = urllib.urlencode(sorted([('double_value', 1.23),
-                                               ('int64_value', -100000000000),
-                                               ('int32_value', 1020),
-                                               ('string_value', u'a string'),
-                                               ('enum_value', 'VAL2'),
+    encoded_partial = urlencode(sorted([('double_value', 1.23),
+                                        ('int64_value', -100000000000),
+                                        ('int32_value', 1020),
+                                        ('string_value', u'a string'),
+                                        ('enum_value', 'VAL2'),
     ], key=lambda kv: kv[0]))
 
-    encoded_full = urllib.urlencode(sorted([('double_value', 1.23),
-                                            ('float_value', -2.5),
-                                            ('int64_value', -100000000000),
-                                            ('uint64_value', 102020202020),
-                                            ('int32_value', 1020),
-                                            ('bool_value', 'true'),
-                                            ('string_value', u'a string\u044f'.encode('utf-8')),
-                                            ('bytes_value', 'a bytes\xff\xfe'),
-                                            ('enum_value', 'VAL2'),
+    encoded_full = urlencode(sorted([('double_value', 1.23),
+                                     ('float_value', -2.5),
+                                     ('int64_value', -100000000000),
+                                     ('uint64_value', 102020202020),
+                                     ('int32_value', 1020),
+                                     ('bool_value', 'true'),
+                                     ('string_value', u'a string\u044f'.encode('utf-8')),
+                                     ('bytes_value', 'YSBieXRlc//+'),
+                                     ('enum_value', 'VAL2'),
     ], key=lambda kv: kv[0]))
 
-    encoded_repeated = urllib.urlencode(sorted([('double_value', 1.23),
-                                                ('double_value', 2.3),
-                                                ('float_value', -2.5),
-                                                ('float_value', 0.5),
-                                                ('int64_value', -100000000000),
-                                                ('int64_value', 20),
-                                                ('uint64_value', 102020202020),
-                                                ('uint64_value', 10),
-                                                ('int32_value', 1020),
-                                                ('int32_value', 718),
-                                                ('bool_value', 'true'),
-                                                ('bool_value', 'false'),
-                                                ('string_value', u'a string\u044f'.encode('utf-8')),
-                                                ('string_value', u'another string'.encode('utf-8')),
-                                                ('bytes_value', 'a bytes\xff\xfe'),
-                                                ('bytes_value', 'another bytes'),
-                                                ('enum_value', 'VAL2'),
-                                                ('enum_value', 'VAL1'),
+    encoded_repeated = urlencode(sorted([('double_value', 1.23),
+                                         ('double_value', 2.3),
+                                         ('float_value', -2.5),
+                                         ('float_value', 0.5),
+                                         ('int64_value', -100000000000),
+                                         ('int64_value', 20),
+                                         ('uint64_value', 102020202020),
+                                         ('uint64_value', 10),
+                                         ('int32_value', 1020),
+                                         ('int32_value', 718),
+                                         ('bool_value', 'true'),
+                                         ('bool_value', 'false'),
+                                         ('string_value', u'a string\u044f'.encode('utf-8')),
+                                         ('string_value', u'another string'.encode('utf-8')),
+                                         ('bytes_value', 'YSBieXRlc//+'),
+                                         ('bytes_value', 'YW5vdGhlciBieXRlcw=='),
+                                         ('enum_value', 'VAL2'),
+                                         ('enum_value', 'VAL1'),
     ], key=lambda kv: kv[0]))
 
-    encoded_nested = urllib.urlencode(sorted([('nested.a_value', 'a string')], key=lambda kv: kv[0]))
+    encoded_nested = urlencode(sorted([('nested.a_value', 'a string')], key=lambda kv: kv[0]))
 
-    encoded_repeated_nested = urllib.urlencode(sorted([('repeated_nested-0.a_value', 'a string'),
+    encoded_repeated_nested = urlencode(sorted([('repeated_nested-0.a_value', 'a string'),
                                                        ('repeated_nested-1.a_value', 'another string'),
     ], key=lambda kv: kv[0]))
 
     unexpected_tag_message = 'unexpected=whatever'
 
-    encoded_default_assigned = urllib.urlencode(sorted([('a_value', 'a default'),], key=lambda kv: kv[0]))
+    encoded_default_assigned = urlencode(sorted([('a_value', 'a default'),], key=lambda kv: kv[0]))
 
-    encoded_nested_empty = urllib.urlencode(sorted([('nested', '')], key=lambda kv: kv[0]))
+    encoded_nested_empty = urlencode(sorted([('nested', '')], key=lambda kv: kv[0]))
 
-    encoded_repeated_nested_empty = urllib.urlencode(sorted([('repeated_nested-0', ''),
-                                                             ('repeated_nested-1', '')], key=lambda kv: kv[0]))
+    encoded_repeated_nested_empty = urlencode(sorted([('repeated_nested-0', ''),
+                                                      ('repeated_nested-1', '')], key=lambda kv: kv[0]))
 
-    encoded_extend_message = urllib.urlencode(sorted([('int64_value-0', 400),
-                                                      ('int64_value-1', 50),
-                                                      ('int64_value-2', 6000)], key=lambda kv: kv[0]))
+    encoded_extend_message = urlencode(sorted([('int64_value-0', 400),
+                                               ('int64_value-1', 50),
+                                               ('int64_value-2', 6000)], key=lambda kv: kv[0]))
 
-    encoded_string_types = urllib.urlencode(
+    encoded_string_types = urlencode(
         sorted([('string_value', 'Latin')], key=lambda kv: kv[0]))
 
-    encoded_invalid_enum = urllib.urlencode([('enum_value', 'undefined')])
+    encoded_invalid_enum = urlencode([('enum_value', 'undefined')])
 
     def testParameterPrefix(self):
         """Test using the 'prefix' parameter to encode_message."""
@@ -314,7 +319,7 @@ class ProtourlencodeConformanceTest(test_util.TestCase,
         encoded_message = to_url.encode_message(message, prefix='prefix-')
         self.assertEquals({'prefix-number': ['10'],
                            'prefix-names': ['Fred', 'Lisa']},
-                          urlparse.parse_qs(encoded_message))
+                          parse_qs(encoded_message))
 
         self.assertEquals(message, to_url.decode_message(MyMessage,
                                                                  encoded_message,
@@ -334,9 +339,9 @@ class ProtourlencodeConformanceTest(test_util.TestCase,
         self.assertEquals((['whatever'], messages.Variant.STRING),
                           decoded.get_unrecognized_field_info('unexpected'))
 
-        repeated_unknown = urllib.urlencode([('repeated', 400),
-                                             ('repeated', 'test'),
-                                             ('repeated', '123.456')])
+        repeated_unknown = urlencode([('repeated', 400),
+                                      ('repeated', 'test'),
+                                      ('repeated', '123.456')])
         decoded2 = to_url.decode_message(MyMessage, repeated_unknown)
         self.assertEquals((['400', 'test', '123.456'], messages.Variant.STRING),
                           decoded2.get_unrecognized_field_info('repeated'))
@@ -450,16 +455,16 @@ class ProtourlencodeConformanceTest(test_util.TestCase,
             number = messages.IntegerField()
 
         dog = Animal(name='dog', size=12)
-        cat = Animal(name='cat', size=10)
+        cat = Animal(name='cÄt', size=10)
         tmp = Animals(animals=[dog, cat], number=2)
 
         encoded_message = to_url.encode_message(tmp)
         self.assertEquals({'number': ['2'],
                            'animals-0.name': ['dog'],
                            'animals-0.size': ['12'],
-                           'animals-1.name': ['cat'],
+                           'animals-1.name': ['cÄt'],
                            'animals-1.size': ['10']},
-                          urlparse.parse_qs(encoded_message))
+                           parse_qs(encoded_message))
 
         self.assertEquals(tmp, to_url.decode_message(Animals, encoded_message))
 

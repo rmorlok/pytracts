@@ -30,6 +30,14 @@ from pytracts import to_json
 
 import json
 
+try:
+    from importlib import reload
+except ImportError:
+    try:
+        from imp import reload
+    except:
+        # Python 2.x
+        reload = reload
 
 class CustomField(messages.MessageField):
     """Custom MessageField class."""
@@ -400,7 +408,7 @@ class ProtojsonTest(test_util.TestCase,
         """Test decoding improperly encoded base64 bytes value."""
         self.assertRaisesWithRegexpMatch(
             messages.DecodeError,
-            'Base64 decoding error: Incorrect padding',
+            '.*padding.*',
             to_json.decode_message,
             test_util.OptionalMessage,
             '{"bytes_value": "abcdefghijklmnopq"}')
@@ -449,7 +457,7 @@ class ProtojsonTest(test_util.TestCase,
         f.bob = "smith"
         f.ryan = "morlok"
 
-        self.assertEquals('{"robert": "smith", "ryan": "morlok"}', to_json.encode_message(f))
+        self.assertEquals(json.loads('{"robert": "smith", "ryan": "morlok"}'), json.loads(to_json.encode_message(f)))
 
     def test_assigned_values_rendered(self):
         class Animals(messages.Message):
@@ -478,7 +486,7 @@ class ProtojsonTest(test_util.TestCase,
         a = Animals()
         a.cow = "moo"
         a.bird = ["quack", "cheep", "honk"]
-        self.assertEquals('{"bird": ["quack", "cheep", "honk"], "cow": "moo"}', to_json.encode_message(a))
+        self.assertEquals(json.loads('{"bird": ["quack", "cheep", "honk"], "cow": "moo"}'), json.loads(to_json.encode_message(a)))
 
     def test_untyped_field_encode(self):
         class Foo(messages.Message):
@@ -578,20 +586,20 @@ class ProtojsonTest(test_util.TestCase,
         gb = GrabBag()
         gb.item_count = 123
         gb.items = {}
-        self.assertEquals('{"items": {}, "item_count": 123}', to_json.encode_message(gb))
+        self.assertEquals(json.loads('{"items": {}, "item_count": 123}'), json.loads(to_json.encode_message(gb)))
 
         gb = GrabBag()
         gb.item_count = 123
         gb.items = {'a': 'b', 'foo': 'bar'}
-        self.assertEquals('{"items": {"a": "b", "foo": "bar"}, "item_count": 123}', to_json.encode_message(gb))
+        self.assertEquals(json.loads('{"items": {"a": "b", "foo": "bar"}, "item_count": 123}'), json.loads(to_json.encode_message(gb)))
 
         gb = GrabBag()
         gb.items = {'a': datetime(2010, 11, 13, 14, 15, 16), 'b': date(2009, 10, 11), 'c': time(1, 2, 3)}
-        self.assertEquals('{"items": {"a": "2010-11-13T14:15:16", "c": "01:02:03", "b": "2009-10-11"}}', to_json.encode_message(gb))
+        self.assertEquals(json.loads('{"items": {"a": "2010-11-13T14:15:16", "c": "01:02:03", "b": "2009-10-11"}}'), json.loads(to_json.encode_message(gb)))
 
         gb = GrabBag()
         gb.items = {'nested': {'a': datetime(2010, 11, 13, 14, 15, 16), 'b': date(2009, 10, 11), 'c': time(1, 2, 3)}}
-        self.assertEquals('{"items": {"nested": {"a": "2010-11-13T14:15:16", "c": "01:02:03", "b": "2009-10-11"}}}', to_json.encode_message(gb))
+        self.assertEquals(json.loads('{"items": {"nested": {"a": "2010-11-13T14:15:16", "c": "01:02:03", "b": "2009-10-11"}}}'), json.loads(to_json.encode_message(gb)))
 
     def test_dict_field_decode(self):
         class GrabBag(messages.Message):

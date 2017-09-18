@@ -31,11 +31,12 @@ import sys
 import base64
 import logging
 import datetime
+import binascii
 
 try:
     import iso8601
 except ImportError:
-    import _local_iso8601 as iso8601
+    from . import _local_iso8601 as iso8601
 
 from . import message_types
 from . import messages
@@ -141,7 +142,8 @@ class MessageJSONEncoder(json.JSONEncoder):
 
 
 class JsonEncoder(object):
-    """Pytracts JSON implementation class.
+    """
+    Pytracts JSON implementation class.
 
     Implementation of JSON based protocol used for serializing and deserializing
     message objects.  Instances of remote.ProtocolConfig constructor or used with
@@ -191,9 +193,9 @@ class JsonEncoder(object):
         """
         if isinstance(field, messages.BytesField):
             if field.repeated:
-                value = [base64.b64encode(byte) for byte in value]
+                value = [base64.b64encode(byte).decode("utf-8") for byte in value]
             else:
-                value = base64.b64encode(value)
+                value = base64.b64encode(value).decode("utf-8")
         elif isinstance(field, messages.DateTimeISO8601Field):
             # DateTimeField stores its data as a ISO 8601 compliant string.
             if field.repeated:
@@ -350,6 +352,8 @@ class JsonEncoder(object):
             try:
                 return base64.b64decode(value)
             except TypeError as err:
+                raise messages.DecodeError('Base64 decoding error: %s' % err)
+            except binascii.Error as err:
                 raise messages.DecodeError('Base64 decoding error: %s' % err)
 
         elif isinstance(field, messages.DateTimeISO8601Field):

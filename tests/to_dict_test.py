@@ -99,7 +99,7 @@ class ProtoDictTest(test_util.TestCase,
         "int32_value": 1020,
         "bool_value": True,
         "string_value": u"a string\u044f",
-        "bytes_value": "a bytes\xff\xfe",
+        "bytes_value": b"a bytes\xff\xfe",
         "enum_value": "VAL2"
     }
 
@@ -111,7 +111,7 @@ class ProtoDictTest(test_util.TestCase,
         "int32_value": [1020, 718],
         "bool_value": [True, False],
         "string_value": [u"a string\u044f", "another string"],
-        "bytes_value": ['a bytes\xff\xfe', 'another bytes'],
+        "bytes_value": [b'a bytes\xff\xfe', b'another bytes'],
         "enum_value": ["VAL2", "VAL1"]
     }
 

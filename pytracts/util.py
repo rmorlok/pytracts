@@ -314,12 +314,37 @@ class AcceptItem(object):
         return ((self.__main_type is None or self.__main_type == main_type) and
                 (self.__sub_type is None or self.__sub_type == sub_type))
 
-
-    def __cmp__(self, other):
-        """Comparison operator based on sort keys."""
+    def __lt__(self, other):
+        """
+        Comparison operator based on sort keys.
+        """
         if not isinstance(other, AcceptItem):
             return NotImplemented
-        return cmp(self.sort_key, other.sort_key)
+        return self.sort_key < other.sort_key
+
+    def __le__(self, other):
+        """
+        Comparison operator based on sort keys.
+        """
+        if not isinstance(other, AcceptItem):
+            return NotImplemented
+        return self.sort_key <= other.sort_key
+
+    def __gt__(self, other):
+        """
+        Comparison operator based on sort keys.
+        """
+        if not isinstance(other, AcceptItem):
+            return NotImplemented
+        return self.sort_key > other.sort_key
+
+    def __ge__(self, other):
+        """
+        Comparison operator based on sort keys.
+        """
+        if not isinstance(other, AcceptItem):
+            return NotImplemented
+        return self.sort_key >= other.sort_key
 
     def __str__(self):
         """Rebuilds Accept header."""
@@ -327,7 +352,7 @@ class AcceptItem(object):
         values = self.values
 
         if values:
-            value_strings = ['%s=%s' % (i, v) for i, v in values.iteritems()]
+            value_strings = ['%s=%s' % (i, v) for i, v in values.items()]
             return '%s; %s' % (content_type, '; '.join(value_strings))
         else:
             return content_type

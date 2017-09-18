@@ -50,12 +50,13 @@ import traceback
 import types
 import weakref
 import datetime
+import uuid
 from six import with_metaclass
 
 try:
     import iso8601
 except ImportError:
-    import _local_iso8601 as iso8601
+    from . import _local_iso8601 as iso8601
 
 from . import util
 
@@ -77,6 +78,7 @@ __all__ = ['MAX_ENUM_VALUE',
            'UntypedField',
            'DateTimeISO8601Field',
            'DateTimeMsIntegerField',
+           'UUIDField',
            'find_definition',
 
            'Error',
@@ -362,7 +364,7 @@ class _EnumClass(_DefinitionClass):
         Yields:
           Enumeration instances of the Enum class in arbitrary order.
         """
-        return cls.__by_number.values()
+        return cls.__by_number.values().__iter__()
 
     def names(cls):
         """Get all names for Enum.
@@ -473,10 +475,40 @@ class Enum(with_metaclass(_EnumClass, object)):
     def __repr__(self):
         return '%s(%s, %d)' % (type(self).__name__, self.name, self.number)
 
-    def __cmp__(self, other):
+    # def __eq__(self, other):
+    #     """Order is by number."""
+    #     if isinstance(other, type(self)):
+    #         return self.number == other.number
+    #     return NotImplemented
+    #
+    # def __ne__(self, other):
+    #     """Order is by number."""
+    #     if isinstance(other, type(self)):
+    #         return self.number != other.number
+    #     return NotImplemented
+    #
+    def __lt__(self, other):
         """Order is by number."""
         if isinstance(other, type(self)):
-            return cmp(self.number, other.number)
+            return self.number < other.number
+        return NotImplemented
+
+    def __le__(self, other):
+        """Order is by number."""
+        if isinstance(other, type(self)):
+            return self.number <= other.number
+        return NotImplemented
+
+    def __gt__(self, other):
+        """Order is by number."""
+        if isinstance(other, type(self)):
+            return self.number > other.number
+        return NotImplemented
+
+    def __ge__(self, other):
+        """Order is by number."""
+        if isinstance(other, type(self)):
+            return self.number >= other.number
         return NotImplemented
 
     @classmethod
@@ -909,7 +941,7 @@ class Message(with_metaclass(_MessageClass, object)):
         """
         Get the names of all unrecognized fields in this message.
         """
-        return self.__unrecognized_fields.keys()
+        return list(self.__unrecognized_fields.keys())
 
     def strip_unrecognized_fields(self):
         """
@@ -1093,16 +1125,16 @@ class FieldList(list):
         if self.__message and self.__field:
             setattr(self.__message, self.__field.alias, self)
 
-    def __setslice__(self, i, j, sequence):
-        """Validate slice assignment to list."""
-        self.__field.validate(sequence)
-        list.__setslice__(self, i, j, sequence)
-        self.__notify_message_of_value_change()
+    def __setitem__(self, item, value):
+        """
+        Validate item assignment to list.
+        """
+        if isinstance(item, slice):
+            self.__field.validate(value)
+        else:
+            self.__field.validate_element(value)
 
-    def __setitem__(self, index, value):
-        """Validate item assignment to list."""
-        self.__field.validate_element(value)
-        list.__setitem__(self, index, value)
+        list.__setitem__(self, item, value)
         self.__notify_message_of_value_change()
 
     def append(self, value):
@@ -1139,9 +1171,6 @@ class _FieldMeta(type):
 # TODO(rafek): Prevent additional field subclasses.
 class Field(with_metaclass(_FieldMeta, object)):
     __variant_to_type = {}
-
-
-
     __initialized = False
 
     @util.positional(1)
@@ -1447,12 +1476,12 @@ class UntypedField(Field):
                           Variant.BOOL,
                           Variant.BYTES,
                           Variant.STRING,
-                          Variant.MESSAGE
+                          Variant.MESSAGE,
     ])
 
     DEFAULT_VARIANT = Variant.STRING
 
-    type = (int, long, float, bool, str, unicode, dict, list)
+    type = (int, long, float, bool, str, unicode, dict, list, uuid.UUID)
 
 
 class IntegerField(Field):
@@ -1468,7 +1497,17 @@ class IntegerField(Field):
 
     DEFAULT_VARIANT = Variant.INT64
 
-    type = (int, long)
+    type = (int, long) if int != long else (int,)
+
+
+class UUIDField(Field):
+    """Field definition for UUID values."""
+
+    VARIANTS = frozenset([Variant.STRING])
+
+    DEFAULT_VARIANT = Variant.STRING
+
+    type = uuid.UUID
 
 
 class FloatField(Field):
@@ -1528,7 +1567,7 @@ class BytesField(Field):
 
     DEFAULT_VARIANT = Variant.BYTES
 
-    type = str
+    type = bytes
 
 
 class StringField(Field):

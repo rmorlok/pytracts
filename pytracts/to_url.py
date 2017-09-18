@@ -90,17 +90,17 @@ __author__ = 'rafek@google.com (Rafe Kaplan)'
 
 import re
 import sys
-import urllib
+import base64
 
 try:
-    from urlparse import urlparse, parse_qs
+    from urlparse import urlparse, parse_qs, urlencode
 except ImportError:
-    from urllib.parse import urlparse, parse_qs
+    from urllib.parse import urlparse, parse_qs, urlencode
 
 try:
     import iso8601
 except ImportError:
-    import _local_iso8601 as iso8601
+    from . import _local_iso8601 as iso8601
 
 from . import message_types
 from . import messages
@@ -459,9 +459,11 @@ class URLEncodedRequestBuilder(object):
                 self.__get_or_create_path(path)
                 return True
             elif isinstance(field, messages.StringField):
-                converted_value = value.decode('utf-8')
+                converted_value = value
             elif isinstance(field, messages.BooleanField):
                 converted_value = value.lower() == 'true' and True or False
+            elif isinstance(field, messages.BytesField):
+                converted_value = base64.b64decode(value)
             else:
                 try:
                     converted_value = field.type(value)
@@ -554,9 +556,11 @@ def encode_message(message, prefix=''):
                         parameters.append((field_name, ''))
                 elif isinstance(field, messages.BooleanField):
                     parameters.append((field_name, item and 'true' or 'false'))
+                elif isinstance(field, messages.BytesField):
+                    parameters.append((field_name, base64.b64encode(item).decode('utf-8')))
                 else:
-                    if isinstance(item, unicode):
-                        item = item.encode('utf-8')
+                    #if isinstance(item, unicode):
+                    #    item = item.encode('utf-8')
                     parameters.append((field_name, str(item)))
 
         return has_any_values
@@ -571,7 +575,7 @@ def encode_message(message, prefix=''):
         for value in values:
             parameters.append((key, value))
 
-    return urllib.urlencode(parameters)
+    return urlencode(parameters)
 
 
 def decode_message(message_type, encoded_message, **kwargs):

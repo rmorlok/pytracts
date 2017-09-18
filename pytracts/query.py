@@ -4,7 +4,7 @@ from datetime import datetime
 try:
     import iso8601
 except ImportError:
-    import _local_iso8601 as iso8601
+    from . import _local_iso8601 as iso8601
 
 from pytracts import messages, to_url, util, exceptions
 

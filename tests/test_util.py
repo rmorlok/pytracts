@@ -69,7 +69,7 @@ class TestCase(unittest.TestCase):
         try:
             function(*params, **kwargs)
             self.fail('Expected exception %s was not raised' % exception.__name__)
-        except exception, err:
+        except exception as err:
             match = bool(re.match(regexp, str(err)))
             self.assertTrue(match, 'Expected match "%s", found "%s"' % (regexp,
                                                                         err))
@@ -220,7 +220,9 @@ class ModuleInterfaceTest(object):
                 if (attribute not in self.MODULE.__all__ and
                         not isinstance(getattr(self.MODULE, attribute),
                                        types.ModuleType) and
-                            attribute != 'with_statement'):
+                            attribute not in ['with_statement', 'basestring', 'cmp', 'long',
+                                              'unicode', 'with_metaclass', 'parse_qs', 'urlparse',
+                                              'urlencode']):
                     missing_attributes.append(attribute)
         if missing_attributes:
             self.fail('%s are not modules and not defined in __all__.' %
@@ -365,7 +367,7 @@ class PytractsConformanceTestBase(object):
           int32_value: 1020
           bool_value: true
           string_value: u"a string\u044f"
-          bytes_value: "a bytes\xff\xfe"
+          bytes_value: b"a bytes\xff\xfe"
           enum_value: OptionalMessage.SimpleEnum.VAL2
           >
 
@@ -378,7 +380,7 @@ class PytractsConformanceTestBase(object):
           int32_value: [1020, 718]
           bool_value: [true, false]
           string_value: [u"a string\u044f", u"another string"]
-          bytes_value: ["a bytes\xff\xfe", "another bytes"]
+          bytes_value: [b"a bytes\xff\xfe", b"another bytes"]
           enum_value: [OptionalMessage.SimpleEnum.VAL2,
                        OptionalMessage.SimpleEnum.VAL 1]
           >
@@ -466,7 +468,7 @@ class PytractsConformanceTestBase(object):
         message.int32_value = 1020
         message.bool_value = True
         message.string_value = u'a string\u044f'
-        message.bytes_value = 'a bytes\xff\xfe'
+        message.bytes_value = b'a bytes\xff\xfe'
         message.enum_value = OptionalMessage.SimpleEnum.VAL2
 
         self.EncodeDecode(self.encoded_full, message)
@@ -481,7 +483,7 @@ class PytractsConformanceTestBase(object):
         message.int32_value = [1020, 718]
         message.bool_value = [True, False]
         message.string_value = [u'a string\u044f', u'another string']
-        message.bytes_value = ['a bytes\xff\xfe', 'another bytes']
+        message.bytes_value = [b'a bytes\xff\xfe', b'another bytes']
         message.enum_value = [RepeatedMessage.SimpleEnum.VAL2,
                               RepeatedMessage.SimpleEnum.VAL1]
 
