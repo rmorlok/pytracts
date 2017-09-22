@@ -346,6 +346,22 @@ class ProtourlencodeConformanceTest(test_util.TestCase,
         self.assertEquals((['400', 'test', '123.456'], messages.Variant.STRING),
                           decoded2.get_unrecognized_field_info('repeated'))
 
+    def testDecodeUUID(self):
+        from uuid import UUID
+        class Foo(messages.Message):
+            bar = messages.UUIDField()
+
+        m = to_url.decode_message(Foo, 'bar=06335e84-2872-4914-8c5d-3ed07d2a2f16')
+        self.assertEquals(UUID("06335e84-2872-4914-8c5d-3ed07d2a2f16"), m.bar)
+
+    def testDecodeUUIDInvalid(self):
+        from uuid import UUID
+        class Foo(messages.Message):
+            bar = messages.UUIDField()
+
+        with self.assertRaises(messages.DecodeError):
+            to_url.decode_message(Foo, 'bar=bad')
+
     def testDecodeDateTimeIso8601(self):
         class MyMessage(messages.Message):
             a_datetime = messages.DateTimeISO8601Field()

@@ -571,6 +571,53 @@ class ProtojsonTest(test_util.TestCase,
         f.bar = [123, "woof", 1.23, True]
         self.assertEquals(f, to_json.decode_message(Foo, '{"bar": [123, "woof", 1.23, true]}'))
 
+    def test_uuid_field_encode(self):
+        from uuid import UUID
+
+        class Foo(messages.Message):
+            bar = messages.UUIDField()
+
+        f = Foo(bar=UUID("06335e84-2872-4914-8c5d-3ed07d2a2f16"))
+        self.assertEquals('{"bar": "06335e84-2872-4914-8c5d-3ed07d2a2f16"}', to_json.encode_message(f))
+
+    def test_uuid_field_encode_repeated(self):
+        from uuid import UUID
+        class Foo(messages.Message):
+            bar = messages.UUIDField(repeated=True)
+
+        f = Foo(bar=[UUID("11115e84-2872-4914-8c5d-3ed07d2a2f16"), UUID("22225e84-2872-4914-8c5d-3ed07d2a2f16")])
+        self.assertEquals(to_json.encode_message(f), '{"bar": ["11115e84-2872-4914-8c5d-3ed07d2a2f16", "22225e84-2872-4914-8c5d-3ed07d2a2f16"]}')
+
+    def test_uuid_field_decode(self):
+        from uuid import UUID
+        class Foo(messages.Message):
+            bar = messages.UUIDField()
+
+        f = Foo(bar=UUID("06335e84-2872-4914-8c5d-3ed07d2a2f16"))
+        self.assertEquals(f, to_json.decode_message(Foo, '{"bar": "06335e84-2872-4914-8c5d-3ed07d2a2f16"}'))
+
+    def test_uuid_field_decode_repeated(self):
+        from uuid import UUID
+        class Foo(messages.Message):
+            bar = messages.UUIDField(repeated=True)
+
+        f = Foo(bar=[UUID("11115e84-2872-4914-8c5d-3ed07d2a2f16"), UUID("22225e84-2872-4914-8c5d-3ed07d2a2f16")])
+        self.assertEquals(f, to_json.decode_message(Foo, '{"bar": ["11115e84-2872-4914-8c5d-3ed07d2a2f16", "22225e84-2872-4914-8c5d-3ed07d2a2f16"]}'))
+
+    def test_uuid_field_decode_bad(self):
+        class Foo(messages.Message):
+            bar = messages.UUIDField()
+
+        with self.assertRaises(messages.DecodeError):
+            to_json.decode_message(Foo, '{"bar": "bad"}')
+
+    def test_uuid_field_decode_bad_repeated(self):
+        class Foo(messages.Message):
+            bar = messages.UUIDField(repeated=True)
+
+        with self.assertRaises(messages.DecodeError):
+            to_json.decode_message(Foo, '{"bar": ["06335e84-2872-4914-8c5d-3ed07d2a2f16", "bad"]}')
+
     def test_dict_field_encode(self):
         class GrabBag(messages.Message):
             item_count = messages.IntegerField()

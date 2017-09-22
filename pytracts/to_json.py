@@ -32,6 +32,7 @@ import base64
 import logging
 import datetime
 import binascii
+import uuid
 
 try:
     import iso8601
@@ -208,6 +209,11 @@ class JsonEncoder(object):
                 value = [util.datetime_to_ms(i) for i in value]
             else:
                 value = util.datetime_to_ms(value)
+        elif isinstance(field, messages.UUIDField):
+            if field.repeated:
+                value = [str(uuid) for uuid in value]
+            else:
+                value = str(value)
         elif isinstance(field, messages.DictField):
             value = self.prep_dict(value)
 
@@ -365,6 +371,14 @@ class JsonEncoder(object):
         elif isinstance(field, messages.DateTimeMsIntegerField):
             try:
                 return util.ms_to_datetime(value)
+            except TypeError as err:
+                raise messages.DecodeError(err)
+            except ValueError as err:
+                raise messages.DecodeError(err)
+
+        elif isinstance(field, messages.UUIDField):
+            try:
+                return uuid.UUID(value)
             except TypeError as err:
                 raise messages.DecodeError(err)
             except ValueError as err:

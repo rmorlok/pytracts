@@ -67,6 +67,8 @@ class MyMessage(messages.Message):
     a_repeated_datetime_ms_integer = messages.DateTimeMsIntegerField(repeated=True)
     a_custom = CustomField()
     a_repeated_custom = CustomField(repeated=True)
+    a_uuid = messages.UUIDField()
+    a_repeated_uuid = messages.UUIDField(repeated=True)
 
 
 class ModuleInterfaceTest(test_util.ModuleInterfaceTest,
@@ -264,6 +266,22 @@ class ProtoDictTest(test_util.TestCase,
             self.assertEquals('unknown_val', decoded.all_unrecognized_fields()[0])
             _, decoded_variant = decoded.get_unrecognized_field_info('unknown_val')
             self.assertEquals(expected_variant, decoded_variant)
+
+    def testDecodeRepeatedUUID(self):
+        from uuid import UUID
+        message = to_dict.decode_message(MyMessage, {"a_repeated_uuid": [
+            UUID("06335e84-2872-4914-8c5d-3ed07d2a2f16"),
+            UUID("16335e84-2872-4914-8c5d-3ed07d2a2f16"),
+            UUID("26335e84-2872-4914-8c5d-3ed07d2a2f16"),
+        ]})
+
+        expected_message = MyMessage(
+            a_repeated_uuid=[
+                UUID("06335e84-2872-4914-8c5d-3ed07d2a2f16"),
+                UUID("16335e84-2872-4914-8c5d-3ed07d2a2f16"),
+                UUID("26335e84-2872-4914-8c5d-3ed07d2a2f16"),])
+
+        self.assertEquals(expected_message, message)
 
     def testDecodeRepeatedDateTimeIso8601(self):
         message = to_dict.decode_message(MyMessage, {"a_repeated_datetime_iso8601": [

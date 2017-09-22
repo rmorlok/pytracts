@@ -1050,6 +1050,7 @@ class FieldTest(test_util.TestCase):
 
         self.assertRaises(ValueError, lambda: Person.weight.coerce({}))
 
+
 class MessageTest(test_util.TestCase):
     """Tests for message class."""
 
@@ -1088,6 +1089,30 @@ class MessageTest(test_util.TestCase):
         original = message.repeated
         message.repeated = []
         self.assertFalse(original is message.repeated)
+
+    def testInitializeWithSimpleValue(self):
+        class SimpleMessage(messages.Message):
+            val = messages.IntegerField()
+
+        message = SimpleMessage(val=123)
+        self.assertEqual(123, message.val)
+
+    def testInitializeWithListValue(self):
+        class SimpleMessage(messages.Message):
+            vals = messages.IntegerField(repeated=True)
+
+        message = SimpleMessage(vals=[1,2,3])
+        self.assertEqual([1,2,3], message.vals)
+
+    def testInitializeWithMsgListValue(self):
+        class NestedVal(messages.Message):
+            v = messages.IntegerField()
+
+        class SimpleMessage(messages.Message):
+            vals = messages.MessageField(NestedVal, repeated=True)
+
+        message = SimpleMessage(vals=[NestedVal(v=1), NestedVal(v=2), NestedVal(v=3)])
+        self.assertEqual([NestedVal(v=1), NestedVal(v=2), NestedVal(v=3)], message.vals)
 
     def testValidate_Optional(self):
         """Tests validation of optional fields."""
