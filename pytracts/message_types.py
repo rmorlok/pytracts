@@ -66,7 +66,7 @@ def error_message_from_exception(exception):
     if hasattr(exception, 'title'):
         result.title = exception.title
     elif hasattr(exception, 'name'):
-        result.title = exception.title
+        result.title = exception.name
 
     if hasattr(exception, 'explanation'):
         result.explanation = exception.explanation
