@@ -60,8 +60,12 @@ def error_message_from_exception(exception):
 
     if hasattr(exception, 'message'):
         result.message = exception.message
+    elif hasattr(exception, 'description'):
+        result.message = exception.description
 
     if hasattr(exception, 'title'):
+        result.title = exception.title
+    elif hasattr(exception, 'name'):
         result.title = exception.title
 
     if hasattr(exception, 'explanation'):
@@ -69,3 +73,5 @@ def error_message_from_exception(exception):
 
     if hasattr(exception, 'detail'):
         result.message = exception.detail
+
+    return result
