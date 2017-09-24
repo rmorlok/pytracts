@@ -103,39 +103,41 @@ def endpoint(route, methods=None, query=None, body=None, lenient=False, defaults
 
     def get_wrapper(route, methods, query, body, lenient, defaults, subdomain, f):
         def wrapper(*args, **kwargs):
-            pj = to_json.JsonEncoder()
-
-            # If we have a body message provided, this request must be json
-            if body is not None:
-                request_content_type = request.headers.get('Content-Type', None)
-
-                if request_content_type is not None:
-                    request_content_type = request_content_type.lower().split(";")[0]
-
-                if request_content_type != "application/json" and not lenient:
-                    raise exceptions.HTTPUnsupportedMediaType("Content type must be 'application/json'")
-
-            for name, message_type in (query or {}).items():
-                try:
-                    query_string = request.url[len(request.base_url)+1:] if len(request.url) > len(request.base_url) + 1 else ''
-                    m = to_url.decode_message(message_type, query_string)
-                    kwargs[name] = m
-
-                except (ValueError, messages.Error) as error:
-                    raise exceptions.HTTPBadRequest(
-                        error.message or "Request JSON is invalid.")
-
-            for name, message_type in (body or {}).items():
-                try:
-                    m = pj.decode_message(message_type, request.get_data(as_text=True))
-                    kwargs[name] = m
-
-                except ValueError as ve:
-                    raise exceptions.HTTPBadRequest("Request body is invalid.")
-                except messages.Error as error:
-                    raise exceptions.HTTPBadRequest(str(error))
-
             try:
+                pj = to_json.JsonEncoder()
+
+                # If we have a body message provided, this request must be json
+                if body is not None:
+                    request_content_type = request.headers.get('Content-Type', None)
+
+                    if request_content_type is not None:
+                        request_content_type = request_content_type.lower().split(";")[0]
+
+                    if request_content_type != "application/json" and not lenient:
+                        raise exceptions.HTTPUnsupportedMediaType(
+                            "Content type must be 'application/json'")
+
+                for name, message_type in (query or {}).items():
+                    try:
+                        query_string = request.url[len(request.base_url) + 1:] if len(
+                            request.url) > len(request.base_url) + 1 else ''
+                        m = to_url.decode_message(message_type, query_string)
+                        kwargs[name] = m
+
+                    except (ValueError, messages.Error) as error:
+                        raise exceptions.HTTPBadRequest(
+                            error.message or "Request JSON is invalid.")
+
+                for name, message_type in (body or {}).items():
+                    try:
+                        m = pj.decode_message(message_type, request.get_data(as_text=True))
+                        kwargs[name] = m
+
+                    except ValueError:
+                        raise exceptions.HTTPBadRequest("Request body is invalid.")
+                    except messages.Error as error:
+                        raise exceptions.HTTPBadRequest(str(error))
+                    
                 # Everything is good. Call the actual handler method
                 result = f(*args, **kwargs)
 
