@@ -130,9 +130,10 @@ def endpoint(route, methods=None, query=None, body=None, lenient=False, defaults
                     m = pj.decode_message(message_type, request.get_data(as_text=True))
                     kwargs[name] = m
 
-                except (ValueError, messages.Error) as error:
-                    raise exceptions.HTTPBadRequest(
-                        error.message or "Query string is invalid.")
+                except ValueError as ve:
+                    raise exceptions.HTTPBadRequest("Request body is invalid.")
+                except messages.Error as error:
+                    raise exceptions.HTTPBadRequest(str(error))
 
             try:
                 # Everything is good. Call the actual handler method
