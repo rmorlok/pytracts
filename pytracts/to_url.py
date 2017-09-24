@@ -443,15 +443,15 @@ class URLEncodedRequestBuilder(object):
                 try:
                     converted_value = iso8601.parse_date(value, default_timezone=None)
                 except iso8601.ParseError as err:
-                    raise messages.DecodeError(err)
+                    raise messages.DecodeError('iso8601 decoding error: %s' % err)
 
             elif isinstance(field, messages.DateTimeMsIntegerField):
                 try:
                     converted_value = util.ms_to_datetime(int(value))
                 except TypeError as err:
-                    raise messages.DecodeError(err)
+                    raise messages.DecodeError('datetime decoding error: %s' % err)
                 except ValueError as err:
-                    raise messages.DecodeError(err)
+                    raise messages.DecodeError('datetime decoding error: %s' % err)
 
             elif isinstance(field, messages.MessageField):
                 # Just make sure it's instantiated.  Assignment to field or
@@ -468,7 +468,7 @@ class URLEncodedRequestBuilder(object):
                 try:
                     converted_value = field.type(value)
                 except (TypeError, ValueError):
-                    raise messages.DecodeError('Invalid value "%s"' % value)
+                    raise messages.DecodeError('Invalid enum value "%s"' % value)
 
             if field.repeated:
                 value_list = getattr(parent, field.alias, None)

@@ -366,23 +366,23 @@ class JsonEncoder(object):
             try:
                 return iso8601.parse_date(value, default_timezone=None)
             except iso8601.ParseError as err:
-                raise messages.DecodeError(err)
+                raise messages.DecodeError('iso8601 decoding error: %s' % err)
 
         elif isinstance(field, messages.DateTimeMsIntegerField):
             try:
                 return util.ms_to_datetime(value)
             except TypeError as err:
-                raise messages.DecodeError(err)
+                raise messages.DecodeError('datetime decoding error: %s' % err)
             except ValueError as err:
-                raise messages.DecodeError(err)
+                raise messages.DecodeError('datetime decoding error: %s' % err)
 
         elif isinstance(field, messages.UUIDField):
             try:
                 return uuid.UUID(value)
             except TypeError as err:
-                raise messages.DecodeError(err)
+                raise messages.DecodeError('uuid decoding error: %s' % err)
             except ValueError as err:
-                raise messages.DecodeError(err)
+                raise messages.DecodeError('uuid decoding error: %s' % err)
 
         elif (isinstance(field, messages.MessageField) and
                   issubclass(field.type, messages.Message)):

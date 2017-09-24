@@ -446,7 +446,7 @@ class Enum(with_metaclass(_EnumClass, object)):
             except KeyError:
                 pass
 
-        raise TypeError('No such value for %s in Enum %s' %
+        raise TypeError("No such value for '%s' in Enum %s" %
                         (index, cls.__name__))
 
     def __init__(self, name, number=None):
