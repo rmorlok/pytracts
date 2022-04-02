@@ -1,6 +1,6 @@
 # pytracts
 
-[![Downloads](https://pepy.tech/badge/pytracts)](https://pepy.tech/project/pytracts)
+[![Downloads](https://img.shields.io/pypi/dm/pytracts)](https://pypistats.org/packages/pytracts)
 
 A library for defining data contracts in native Python code, based on the [Google ProtoRPC library](https://code.google.com/p/google-protorpc/)
 
