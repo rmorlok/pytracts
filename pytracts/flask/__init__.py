@@ -137,7 +137,7 @@ def endpoint(route, methods=None, query=None, body=None, lenient=False, defaults
                         raise exceptions.HTTPBadRequest("Request body is invalid.")
                     except messages.Error as error:
                         raise exceptions.HTTPBadRequest(str(error))
-                    
+
                 # Everything is good. Call the actual handler method
                 result = f(*args, **kwargs)
 
