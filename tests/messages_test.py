@@ -44,13 +44,13 @@ class ModuleInterfaceTest(test_util.ModuleInterfaceTest, test_util.TestCase):
 class ValidationErrorTest(test_util.TestCase):
     def test_str_no_field_name(self):
         """Test string version of ValidationError when no name provided."""
-        self.assertEquals('Validation error',str(messages.ValidationError('Validation error')))
+        self.assertEqual('Validation error',str(messages.ValidationError('Validation error')))
 
     def test_str_field_name(self):
         """Test string version of ValidationError when no name provided."""
         validation_error = messages.ValidationError('Validation error')
         validation_error.field_name = 'a_field'
-        self.assertEquals('Validation error', str(validation_error))
+        self.assertEqual('Validation error', str(validation_error))
 
 
 class EnumTest(test_util.TestCase):
@@ -72,17 +72,17 @@ class EnumTest(test_util.TestCase):
 
     def testNames(self):
         """Test that names iterates over enum names."""
-        self.assertEquals(
+        self.assertEqual(
             {'BLUE', 'GREEN', 'INDIGO', 'ORANGE', 'RED', 'VIOLET', 'YELLOW'},
             set(Color.names()))
 
     def testNumbers(self):
         """Tests that numbers iterates of enum numbers."""
-        self.assertEquals({2, 4, 5, 20, 40, 50, 80}, set(Color.numbers()))
+        self.assertEqual({2, 4, 5, 20, 40, 50, 80}, set(Color.numbers()))
 
     def testIterate(self):
         """Test that __iter__ iterates over all enum values."""
-        self.assertEquals(set(Color),
+        self.assertEqual(set(Color),
                           {Color.RED,
                            Color.ORANGE,
                            Color.YELLOW,
@@ -93,7 +93,7 @@ class EnumTest(test_util.TestCase):
 
     def testNaturalOrder(self):
         """Test that natural order enumeration is in numeric order."""
-        self.assertEquals([Color.ORANGE,
+        self.assertEqual([Color.ORANGE,
                            Color.GREEN,
                            Color.INDIGO,
                            Color.RED,
@@ -111,16 +111,16 @@ class EnumTest(test_util.TestCase):
     def testByNumber(self):
         """Test look-up by number."""
         self.assertRaises(KeyError, Color.lookup_by_number, 'RED')
-        self.assertEquals(Color.RED, Color.lookup_by_number(20))
+        self.assertEqual(Color.RED, Color.lookup_by_number(20))
         self.assertRaises(KeyError, Color.lookup_by_number, Color.RED)
 
     def testConstructor(self):
         """Test that constructor look-up by name or number."""
-        self.assertEquals(Color.RED, Color('RED'))
-        self.assertEquals(Color.RED, Color(u'RED'))
-        self.assertEquals(Color.RED, Color(20))
-        self.assertEquals(Color.RED, Color(long(20)))
-        self.assertEquals(Color.RED, Color(Color.RED))
+        self.assertEqual(Color.RED, Color('RED'))
+        self.assertEqual(Color.RED, Color(u'RED'))
+        self.assertEqual(Color.RED, Color(20))
+        self.assertEqual(Color.RED, Color(long(20)))
+        self.assertEqual(Color.RED, Color(Color.RED))
         self.assertRaises(TypeError, Color, 'Not exists')
         self.assertRaises(TypeError, Color, 'Red')
         self.assertRaises(TypeError, Color, 100)
@@ -128,7 +128,7 @@ class EnumTest(test_util.TestCase):
 
     def testLen(self):
         """Test that len function works to count enums."""
-        self.assertEquals(7, len(Color))
+        self.assertEqual(7, len(Color))
 
     def testNoSubclasses(self):
         """Test that it is not possible to sub-class enum classes."""
@@ -166,9 +166,9 @@ class EnumTest(test_util.TestCase):
                                           'Saturday': 7,
                                           'Sunday': 8},
                                          'WeekDay')
-        self.assertEquals('Wednesday', WeekDay(3).name)
-        self.assertEquals(6, WeekDay('Friday').number)
-        self.assertEquals(WeekDay.Sunday, WeekDay('Sunday'))
+        self.assertEqual('Wednesday', WeekDay(3).name)
+        self.assertEqual(6, WeekDay('Friday').number)
+        self.assertEqual(WeekDay.Sunday, WeekDay('Sunday'))
 
     def testNonInt(self):
         """Test that non-integer values rejection by enum def."""
@@ -191,7 +191,7 @@ class EnumTest(test_util.TestCase):
             """Testing for value zero"""
             VALUE = 0
 
-        self.assertEquals(0, int(NotImportant.VALUE))
+        self.assertEqual(0, int(NotImportant.VALUE))
 
     def testTooLargeInt(self):
         """Test that numbers too large are rejected."""
@@ -209,18 +209,18 @@ class EnumTest(test_util.TestCase):
 
     def testStr(self):
         """Test converting to string."""
-        self.assertEquals('RED', str(Color.RED))
-        self.assertEquals('ORANGE', str(Color.ORANGE))
+        self.assertEqual('RED', str(Color.RED))
+        self.assertEqual('ORANGE', str(Color.ORANGE))
 
     def testInt(self):
         """Test converting to int."""
-        self.assertEquals(20, int(Color.RED))
-        self.assertEquals(2, int(Color.ORANGE))
+        self.assertEqual(20, int(Color.RED))
+        self.assertEqual(2, int(Color.ORANGE))
 
     def testRepr(self):
         """Test enum representation."""
-        self.assertEquals('Color(RED, 20)', repr(Color.RED))
-        self.assertEquals('Color(YELLOW, 40)', repr(Color.YELLOW))
+        self.assertEqual('Color(RED, 20)', repr(Color.RED))
+        self.assertEqual('Color(YELLOW, 40)', repr(Color.YELLOW))
 
     def testDocstring(self):
         """Test that docstring is supported ok."""
@@ -230,7 +230,7 @@ class EnumTest(test_util.TestCase):
 
             VALUE1 = 1
 
-        self.assertEquals('I have a docstring.', NotImportant.__doc__)
+        self.assertEqual('I have a docstring.', NotImportant.__doc__)
 
     def testDeleteEnumValue(self):
         """Test that enum values cannot be deleted."""
@@ -239,18 +239,18 @@ class EnumTest(test_util.TestCase):
     def testEnumName(self):
         """Test enum name."""
         module_name = test_util.get_module_name(EnumTest)
-        self.assertEquals('%s.Color' % module_name, Color.definition_name())
-        self.assertEquals(module_name, Color.outer_definition_name())
-        self.assertEquals(module_name, Color.definition_package())
+        self.assertEqual('%s.Color' % module_name, Color.definition_name())
+        self.assertEqual(module_name, Color.outer_definition_name())
+        self.assertEqual(module_name, Color.definition_package())
 
     def testDefinitionName_OverrideModule(self):
         """Test enum module is overriden by module package name."""
         global package
         try:
             package = 'my.package'
-            self.assertEquals('my.package.Color', Color.definition_name())
-            self.assertEquals('my.package', Color.outer_definition_name())
-            self.assertEquals('my.package', Color.definition_package())
+            self.assertEqual('my.package.Color', Color.definition_name())
+            self.assertEqual('my.package', Color.outer_definition_name())
+            self.assertEqual('my.package', Color.definition_package())
         finally:
             del package
 
@@ -264,10 +264,10 @@ class EnumTest(test_util.TestCase):
         sys.modules = dict(sys.modules)
         try:
             del sys.modules[__name__]
-            self.assertEquals('Enum1', Enum1.definition_name())
-            self.assertEquals(None, Enum1.outer_definition_name())
-            self.assertEquals(None, Enum1.definition_package())
-            self.assertEquals(unicode, type(Enum1.definition_name()))
+            self.assertEqual('Enum1', Enum1.definition_name())
+            self.assertEqual(None, Enum1.outer_definition_name())
+            self.assertEqual(None, Enum1.definition_package())
+            self.assertEqual(unicode, type(Enum1.definition_name()))
         finally:
             sys.modules = original_modules
 
@@ -283,19 +283,19 @@ class EnumTest(test_util.TestCase):
                     pass
 
         module_name = test_util.get_module_name(EnumTest)
-        self.assertEquals('%s.MyMessage.NestedEnum' % module_name,
+        self.assertEqual('%s.MyMessage.NestedEnum' % module_name,
                           MyMessage.NestedEnum.definition_name())
-        self.assertEquals('%s.MyMessage' % module_name,
+        self.assertEqual('%s.MyMessage' % module_name,
                           MyMessage.NestedEnum.outer_definition_name())
-        self.assertEquals(module_name,
+        self.assertEqual(module_name,
                           MyMessage.NestedEnum.definition_package())
 
-        self.assertEquals('%s.MyMessage.NestedMessage.NestedEnum' % module_name,
+        self.assertEqual('%s.MyMessage.NestedMessage.NestedEnum' % module_name,
                           MyMessage.NestedMessage.NestedEnum.definition_name())
-        self.assertEquals(
+        self.assertEqual(
             '%s.MyMessage.NestedMessage' % module_name,
             MyMessage.NestedMessage.NestedEnum.outer_definition_name())
-        self.assertEquals(module_name,
+        self.assertEqual(module_name,
                           MyMessage.NestedMessage.NestedEnum.definition_package())
 
     def testMessageDefinition(self):
@@ -304,13 +304,13 @@ class EnumTest(test_util.TestCase):
         class OuterEnum(messages.Enum):
             pass
 
-        self.assertEquals(None, OuterEnum.message_definition())
+        self.assertEqual(None, OuterEnum.message_definition())
 
         class OuterMessage(messages.Message):
             class InnerEnum(messages.Enum):
                 pass
 
-        self.assertEquals(OuterMessage, OuterMessage.InnerEnum.message_definition())
+        self.assertEqual(OuterMessage, OuterMessage.InnerEnum.message_definition())
 
     def testComparison(self):
         """Test comparing various enums to different types."""
@@ -322,7 +322,7 @@ class EnumTest(test_util.TestCase):
         class Enum2(messages.Enum):
             VAL1 = 1
 
-        self.assertEquals(Enum1.VAL1, Enum1.VAL1)
+        self.assertEqual(Enum1.VAL1, Enum1.VAL1)
         self.assertNotEqual(Enum1.VAL1, Enum1.VAL2)
         self.assertNotEqual(Enum1.VAL1, Enum2.VAL1)
         self.assertNotEqual(Enum1.VAL1, 'VAL1')
@@ -345,11 +345,11 @@ class FieldListTest(test_util.TestCase):
         self.integer_field = FieldListTestDummyMsg.integer_field
 
     def testConstructor(self):
-        self.assertEquals([1, 2, 3],
+        self.assertEqual([1, 2, 3],
                           messages.FieldList(None, self.integer_field, [1, 2, 3]))
-        self.assertEquals([1, 2, 3],
+        self.assertEqual([1, 2, 3],
                           messages.FieldList(None, self.integer_field, (1, 2, 3)))
-        self.assertEquals([], messages.FieldList(None, self.integer_field, []))
+        self.assertEqual([], messages.FieldList(None, self.integer_field, []))
 
     def testNone(self):
         self.assertRaises(TypeError, messages.FieldList, self.integer_field, None)
@@ -393,7 +393,7 @@ class FieldListTest(test_util.TestCase):
     def testSetSlice(self):
         field_list = messages.FieldList(None, self.integer_field, [1, 2, 3, 4, 5])
         field_list[1:3] = [10, 20]
-        self.assertEquals([1, 10, 20, 4, 5], field_list)
+        self.assertEqual([1, 10, 20, 4, 5], field_list)
 
     def testSetSlice_InvalidValues(self):
         field_list = messages.FieldList(None, self.integer_field, [1, 2, 3, 4, 5])
@@ -406,7 +406,7 @@ class FieldListTest(test_util.TestCase):
     def testSetItem(self):
         field_list = messages.FieldList(None, self.integer_field, [2])
         field_list[0] = 10
-        self.assertEquals([10], field_list)
+        self.assertEqual([10], field_list)
 
     def testSetItem_InvalidValues(self):
         field_list = messages.FieldList(None, self.integer_field, [2])
@@ -419,7 +419,7 @@ class FieldListTest(test_util.TestCase):
     def testAppend(self):
         field_list = messages.FieldList(None, self.integer_field, [2])
         field_list.append(10)
-        self.assertEquals([2, 10], field_list)
+        self.assertEqual([2, 10], field_list)
 
     def testAppend_InvalidValues(self):
         field_list = messages.FieldList(None, self.integer_field, [2])
@@ -433,7 +433,7 @@ class FieldListTest(test_util.TestCase):
     def testExtend(self):
         field_list = messages.FieldList(None, self.integer_field, [2])
         field_list.extend([10])
-        self.assertEquals([2, 10], field_list)
+        self.assertEqual([2, 10], field_list)
 
     def testExtend_InvalidValues(self):
         field_list = messages.FieldList(None, self.integer_field, [2])
@@ -446,7 +446,7 @@ class FieldListTest(test_util.TestCase):
     def testInsert(self):
         field_list = messages.FieldList(None, self.integer_field, [2, 3])
         field_list.insert(1, 10)
-        self.assertEquals([2, 10, 3], field_list)
+        self.assertEqual([2, 10, 3], field_list)
 
     def testInsert_InvalidValues(self):
         field_list = messages.FieldList(None, self.integer_field, [2, 3])
@@ -503,14 +503,14 @@ class FieldTest(test_util.TestCase):
 
         def action(field_class):
             field = field_class()
-            self.assertEquals(field_class.DEFAULT_VARIANT, field.variant)
+            self.assertEqual(field_class.DEFAULT_VARIANT, field.variant)
 
         self.ActionOnAllFieldClasses(action)
 
     def testAlternateVariant(self):
         """Test that default variant is used when not set."""
         field = messages.IntegerField(variant=messages.Variant.UINT32)
-        self.assertEquals(messages.Variant.UINT32, field.variant)
+        self.assertEqual(messages.Variant.UINT32, field.variant)
 
     def testDefaultFields_Single(self):
         """Test default field is correct type."""
@@ -579,7 +579,7 @@ class FieldTest(test_util.TestCase):
 
         field = messages.EnumField(Symbol, default=Symbol.ALPHA)
 
-        self.assertEquals(Symbol.ALPHA, field.default)
+        self.assertEqual(Symbol.ALPHA, field.default)
 
     def testValidate_Valid(self):
         """Test validation of valid values."""
@@ -747,7 +747,7 @@ class FieldTest(test_util.TestCase):
             pass
 
         field = messages.MessageField(MyMessage)
-        self.assertEquals(MyMessage, field.type)
+        self.assertEqual(MyMessage, field.type)
 
     def testMessageField_ForwardReference(self):
         """Test the construction of forward reference message fields."""
@@ -772,19 +772,19 @@ class FieldTest(test_util.TestCase):
                 class NestedMessage(messages.Message):
                     pass
 
-            self.assertEquals(MyMessage,
+            self.assertEqual(MyMessage,
                               MyMessage.field_by_name('self_reference').type)
 
-            self.assertEquals(ForwardMessage,
+            self.assertEqual(ForwardMessage,
                               MyMessage.field_by_name('forward').type)
 
-            self.assertEquals(ForwardMessage.NestedMessage,
+            self.assertEqual(ForwardMessage.NestedMessage,
                               MyMessage.field_by_name('nested').type)
 
-            self.assertEquals(MyMessage.Inner,
+            self.assertEqual(MyMessage.Inner,
                               MyMessage.field_by_name('inner').type)
 
-            self.assertEquals(MyMessage.Sibling,
+            self.assertEqual(MyMessage.Sibling,
                               MyMessage.Inner.field_by_name('sibling').type)
         finally:
             try:
@@ -923,7 +923,7 @@ class FieldTest(test_util.TestCase):
             BLUE = 3
 
         field = messages.EnumField(Color)
-        self.assertEquals(Color, field.type)
+        self.assertEqual(Color, field.type)
 
         class Another(messages.Enum):
             VALUE = 1
@@ -956,13 +956,13 @@ class FieldTest(test_util.TestCase):
                 class NestedEnum(messages.Enum):
                     pass
 
-            self.assertEquals(ForwardEnum,
+            self.assertEqual(ForwardEnum,
                               MyMessage.field_by_name('forward').type)
 
-            self.assertEquals(ForwardMessage.NestedEnum,
+            self.assertEqual(ForwardMessage.NestedEnum,
                               MyMessage.field_by_name('nested').type)
 
-            self.assertEquals(MyMessage.Inner,
+            self.assertEqual(MyMessage.Inner,
                               MyMessage.field_by_name('inner').type)
         finally:
             try:
@@ -996,7 +996,7 @@ class FieldTest(test_util.TestCase):
         class MyMessage(messages.Message):
             my_field = messages.StringField()
 
-        self.assertEquals(MyMessage,
+        self.assertEqual(MyMessage,
                           MyMessage.field_by_name('my_field').message_definition())
 
     def testNoneAssignment(self):
@@ -1008,7 +1008,7 @@ class FieldTest(test_util.TestCase):
         m1 = MyMessage()
         m2 = MyMessage()
         m2.my_field = None
-        self.assertNotEquals(m1, m2)
+        self.assertNotEqual(m1, m2)
 
     def testNonAsciiStr(self):
         """Test validation fails for non-ascii StringField values."""
@@ -1033,16 +1033,16 @@ class FieldTest(test_util.TestCase):
 
         p = Person()
         p.weight = Person.weight.coerce(123)
-        self.assertEquals(123, p.weight)
+        self.assertEqual(123, p.weight)
 
         p.weight = Person.weight.coerce(123.45)
-        self.assertEquals(123, p.weight)
+        self.assertEqual(123, p.weight)
 
         p.weight = Person.weight.coerce('123')
-        self.assertEquals(123, p.weight)
+        self.assertEqual(123, p.weight)
 
         p.weight = Person.weight.coerce(None)
-        self.assertEquals(None, p.weight)
+        self.assertEqual(None, p.weight)
 
     def testCoerceValueInvalid(self):
         class Person(messages.Message):
@@ -1215,7 +1215,7 @@ class MessageTest(test_util.TestCase):
         repeated_values = [{}, {'required': 10}, SimpleMessage(required=20)]
 
         repeated_message1 = RepeatedMessage(simple=repeated_values)
-        self.assertEquals(3, len(repeated_message1.simple))
+        self.assertEqual(3, len(repeated_message1.simple))
         self.assertFalse(repeated_message1.is_initialized())
 
         repeated_message1.simple[0].required = 0
@@ -1223,7 +1223,7 @@ class MessageTest(test_util.TestCase):
 
         repeated_message2 = RepeatedMessage()
         repeated_message2.simple = repeated_values
-        self.assertEquals(3, len(repeated_message2.simple))
+        self.assertEqual(3, len(repeated_message2.simple))
         self.assertFalse(repeated_message2.is_initialized())
 
         repeated_message2.simple[0].required = 0
@@ -1269,7 +1269,7 @@ class MessageTest(test_util.TestCase):
         class HasNamedFields(messages.Message):
             field = messages.StringField()
 
-        self.assertEquals('field', HasNamedFields.field_by_name('field').name)
+        self.assertEqual('field', HasNamedFields.field_by_name('field').name)
 
     def testSubclassingMessageDisallowed(self):
         """Not permitted to create sub-classes of message classes."""
@@ -1292,18 +1292,18 @@ class MessageTest(test_util.TestCase):
         # Order does not matter, so sort now.
         fields = sorted(fields, key=lambda f: f.name)
 
-        self.assertEquals(3, len(fields))
-        self.assertEquals('a3', fields[0].name)
-        self.assertEquals('b1', fields[1].name)
-        self.assertEquals('c2', fields[2].name)
+        self.assertEqual(3, len(fields))
+        self.assertEqual('a3', fields[0].name)
+        self.assertEqual('b1', fields[1].name)
+        self.assertEqual('c2', fields[2].name)
 
     def testFieldByName(self):
         """Test getting field by name."""
         ComplexMessage = self.CreateMessageClass()
 
-        self.assertEquals('a3', ComplexMessage.field_by_name('a3').name)
-        self.assertEquals('b1', ComplexMessage.field_by_name('b1').name)
-        self.assertEquals('c2', ComplexMessage.field_by_name('c2').name)
+        self.assertEqual('a3', ComplexMessage.field_by_name('a3').name)
+        self.assertEqual('b1', ComplexMessage.field_by_name('b1').name)
+        self.assertEqual('c2', ComplexMessage.field_by_name('c2').name)
 
         self.assertRaises(KeyError,
                           ComplexMessage.field_by_name,
@@ -1322,9 +1322,9 @@ class MessageTest(test_util.TestCase):
         self.assertFalse(SimpleMessage.s.is_set(m))
         self.assertFalse(SimpleMessage.i.is_set(m))
         self.assertFalse(SimpleMessage.r.is_set(m))
-        self.assertEquals(None, m.s)
-        self.assertEquals(None, m.i)
-        self.assertEquals([], m.r)
+        self.assertEqual(None, m.s)
+        self.assertEqual(None, m.i)
+        self.assertEqual([], m.r)
 
         m = SimpleMessage()
         m.s = None
@@ -1335,9 +1335,9 @@ class MessageTest(test_util.TestCase):
         self.assertTrue(SimpleMessage.s.is_set(m))
         self.assertFalse(SimpleMessage.i.is_set(m))
         self.assertFalse(SimpleMessage.r.is_set(m))
-        self.assertEquals(None, m.s)
-        self.assertEquals(None, m.i)
-        self.assertEquals([], m.r)
+        self.assertEqual(None, m.s)
+        self.assertEqual(None, m.i)
+        self.assertEqual([], m.r)
 
         m = SimpleMessage()
         m.i = None
@@ -1348,9 +1348,9 @@ class MessageTest(test_util.TestCase):
         self.assertFalse(SimpleMessage.s.is_set(m))
         self.assertTrue(SimpleMessage.i.is_set(m))
         self.assertFalse(SimpleMessage.r.is_set(m))
-        self.assertEquals(None, m.s)
-        self.assertEquals(None, m.i)
-        self.assertEquals([], m.r)
+        self.assertEqual(None, m.s)
+        self.assertEqual(None, m.i)
+        self.assertEqual([], m.r)
 
         m = SimpleMessage()
         m.s = "foo"
@@ -1361,9 +1361,9 @@ class MessageTest(test_util.TestCase):
         self.assertTrue(SimpleMessage.s.is_set(m))
         self.assertFalse(SimpleMessage.i.is_set(m))
         self.assertFalse(SimpleMessage.r.is_set(m))
-        self.assertEquals("foo", m.s)
-        self.assertEquals(None, m.i)
-        self.assertEquals([], m.r)
+        self.assertEqual("foo", m.s)
+        self.assertEqual(None, m.i)
+        self.assertEqual([], m.r)
 
         m = SimpleMessage()
         m.i = 123
@@ -1374,9 +1374,9 @@ class MessageTest(test_util.TestCase):
         self.assertFalse(SimpleMessage.s.is_set(m))
         self.assertTrue(SimpleMessage.i.is_set(m))
         self.assertFalse(SimpleMessage.r.is_set(m))
-        self.assertEquals(None, m.s)
-        self.assertEquals(123, m.i)
-        self.assertEquals([], m.r)
+        self.assertEqual(None, m.s)
+        self.assertEqual(123, m.i)
+        self.assertEqual([], m.r)
 
         m = SimpleMessage()
         m.r = []
@@ -1387,9 +1387,9 @@ class MessageTest(test_util.TestCase):
         self.assertFalse(SimpleMessage.s.is_set(m))
         self.assertFalse(SimpleMessage.i.is_set(m))
         self.assertTrue(SimpleMessage.r.is_set(m))
-        self.assertEquals(None, m.s)
-        self.assertEquals(None, m.i)
-        self.assertEquals([], m.r)
+        self.assertEqual(None, m.s)
+        self.assertEqual(None, m.i)
+        self.assertEqual([], m.r)
 
         m = SimpleMessage()
         m.r = ['foo', 'bar']
@@ -1400,9 +1400,9 @@ class MessageTest(test_util.TestCase):
         self.assertFalse(SimpleMessage.s.is_set(m))
         self.assertFalse(SimpleMessage.i.is_set(m))
         self.assertTrue(SimpleMessage.r.is_set(m))
-        self.assertEquals(None, m.s)
-        self.assertEquals(None, m.i)
-        self.assertEquals(['foo', 'bar'], m.r)
+        self.assertEqual(None, m.s)
+        self.assertEqual(None, m.i)
+        self.assertEqual(['foo', 'bar'], m.r)
 
     def test_has_value_set_repeated_with_alias(self):
         class SimpleMessage(messages.Message):
@@ -1418,7 +1418,7 @@ class MessageTest(test_util.TestCase):
             foo = messages.IntegerField(repeated=True)
 
         msg = WithRepeated()
-        self.assertEquals([], msg.foo)
+        self.assertEqual([], msg.foo)
         self.assertFalse(WithRepeated.foo.is_set(msg))
 
         msg = WithRepeated()
@@ -1435,20 +1435,20 @@ class MessageTest(test_util.TestCase):
 
         msg1 = WithRepeated()
         msg2 = WithRepeated()
-        self.assertEquals([], msg1.foo)
-        self.assertEquals([], msg2.foo)
+        self.assertEqual([], msg1.foo)
+        self.assertEqual([], msg2.foo)
         self.assertFalse(WithRepeated.foo.is_set(msg1))
         self.assertFalse(WithRepeated.foo.is_set(msg2))
 
         msg1.foo = msg2.foo
-        self.assertEquals([], msg1.foo)
-        self.assertEquals([], msg2.foo)
+        self.assertEqual([], msg1.foo)
+        self.assertEqual([], msg2.foo)
         self.assertTrue(WithRepeated.foo.is_set(msg1))
         self.assertFalse(WithRepeated.foo.is_set(msg2))
 
         msg1.foo.append(1)
-        self.assertEquals([1], msg1.foo)
-        self.assertEquals([], msg2.foo)
+        self.assertEqual([1], msg1.foo)
+        self.assertEqual([], msg2.foo)
         self.assertTrue(WithRepeated.foo.is_set(msg1))
         self.assertFalse(WithRepeated.foo.is_set(msg2))
 
@@ -1462,10 +1462,10 @@ class MessageTest(test_util.TestCase):
         self.assertRaises(KeyError, lambda: message.get_assigned_value('a_value'))
 
         message.a_value = u'a string'
-        self.assertEquals(u'a string', message.get_assigned_value('a_value'))
+        self.assertEqual(u'a string', message.get_assigned_value('a_value'))
 
         message.a_value = u'a default'
-        self.assertEquals(u'a default', message.get_assigned_value('a_value'))
+        self.assertEqual(u'a default', message.get_assigned_value('a_value'))
 
         self.assertRaises(KeyError, lambda: message.get_assigned_value('no_such_field'))
 
@@ -1477,14 +1477,14 @@ class MessageTest(test_util.TestCase):
 
         message = SomeMessage()
 
-        self.assertEquals(u'a default', message.a_value)
+        self.assertEqual(u'a default', message.a_value)
         message.unset('a_value')
-        self.assertEquals(u'a default', message.a_value)
+        self.assertEqual(u'a default', message.a_value)
 
         message.a_value = u'a new value'
-        self.assertEquals(u'a new value', message.a_value)
+        self.assertEqual(u'a new value', message.a_value)
         message.unset('a_value')
-        self.assertEquals(u'a default', message.a_value)
+        self.assertEqual(u'a default', message.a_value)
 
     def testAllowNestedEnums(self):
         """Test allowing nested enums in a message definition."""
@@ -1500,10 +1500,10 @@ class MessageTest(test_util.TestCase):
                 INR = 3
 
         # Sorted by name order seems to be the only feasible option.
-        self.assertEquals(['Currency', 'Duration'], Trade.__enums__)
+        self.assertEqual(['Currency', 'Duration'], Trade.__enums__)
 
         # Message definition will now be set on Enumerated objects.
-        self.assertEquals(Trade, Trade.Duration.message_definition())
+        self.assertEqual(Trade, Trade.Duration.message_definition())
 
     def testAllowNestedMessages(self):
         """Test allowing nested messages in a message definition."""
@@ -1516,9 +1516,9 @@ class MessageTest(test_util.TestCase):
                 pass
 
         # Sorted by name order seems to be the only feasible option.
-        self.assertEquals(['Agent', 'Lot'], Trade.__messages__)
-        self.assertEquals(Trade, Trade.Agent.message_definition())
-        self.assertEquals(Trade, Trade.Lot.message_definition())
+        self.assertEqual(['Agent', 'Lot'], Trade.__messages__)
+        self.assertEqual(Trade, Trade.Agent.message_definition())
+        self.assertEqual(Trade, Trade.Lot.message_definition())
 
         # But not Message itself.
         def action():
@@ -1557,42 +1557,42 @@ class MessageTest(test_util.TestCase):
 
         message1 = MyMessage()
 
-        self.assertNotEquals('hi', message1)
-        self.assertNotEquals(AnotherMessage(), message1)
-        self.assertEquals(message1, message1)
+        self.assertNotEqual('hi', message1)
+        self.assertNotEqual(AnotherMessage(), message1)
+        self.assertEqual(message1, message1)
 
         message2 = MyMessage()
 
-        self.assertEquals(message1, message2)
+        self.assertEqual(message1, message2)
 
         message1.field1 = 10
-        self.assertNotEquals(message1, message2)
+        self.assertNotEqual(message1, message2)
 
         message2.field1 = 20
-        self.assertNotEquals(message1, message2)
+        self.assertNotEqual(message1, message2)
 
         message2.field1 = 10
-        self.assertEquals(message1, message2)
+        self.assertEqual(message1, message2)
 
         message1.field2 = MyEnum.val1
-        self.assertNotEquals(message1, message2)
+        self.assertNotEqual(message1, message2)
 
         message2.field2 = MyEnum.val2
-        self.assertNotEquals(message1, message2)
+        self.assertNotEqual(message1, message2)
 
         message2.field2 = MyEnum.val1
-        self.assertEquals(message1, message2)
+        self.assertEqual(message1, message2)
 
         message1.field3 = AnotherMessage()
         message1.field3.string = 'value1'
-        self.assertNotEquals(message1, message2)
+        self.assertNotEqual(message1, message2)
 
         message2.field3 = AnotherMessage()
         message2.field3.string = 'value2'
-        self.assertNotEquals(message1, message2)
+        self.assertNotEqual(message1, message2)
 
         message2.field3.string = 'value1'
-        self.assertEquals(message1, message2)
+        self.assertEqual(message1, message2)
 
     def testEqualityWithUnknowns(self):
         """Test message class equality with unknown fields."""
@@ -1602,16 +1602,16 @@ class MessageTest(test_util.TestCase):
 
         message1 = MyMessage()
         message2 = MyMessage()
-        self.assertEquals(message1, message2)
+        self.assertEqual(message1, message2)
         message1.set_unrecognized_field('unknown1', 'value1',
                                         messages.Variant.STRING)
-        self.assertEquals(message1, message2)
+        self.assertEqual(message1, message2)
 
         message1.set_unrecognized_field('unknown2', ['asdf', 3],
                                         messages.Variant.STRING)
         message1.set_unrecognized_field('unknown3', 4.7,
                                         messages.Variant.DOUBLE)
-        self.assertEquals(message1, message2)
+        self.assertEqual(message1, message2)
 
     def testUnrecognizedFieldInvalidVariant(self):
         class MyMessage(messages.Message):
@@ -1692,14 +1692,14 @@ class MessageTest(test_util.TestCase):
             pass
 
         module_name = test_util.get_module_name(FieldTest)
-        self.assertEquals('%s.MyMessage' % module_name,
+        self.assertEqual('%s.MyMessage' % module_name,
                           MyMessage.definition_name())
-        self.assertEquals(module_name, MyMessage.outer_definition_name())
-        self.assertEquals(module_name, MyMessage.definition_package())
+        self.assertEqual(module_name, MyMessage.outer_definition_name())
+        self.assertEqual(module_name, MyMessage.definition_package())
 
-        self.assertEquals(unicode, type(MyMessage.definition_name()))
-        self.assertEquals(unicode, type(MyMessage.outer_definition_name()))
-        self.assertEquals(unicode, type(MyMessage.definition_package()))
+        self.assertEqual(unicode, type(MyMessage.definition_name()))
+        self.assertEqual(unicode, type(MyMessage.outer_definition_name()))
+        self.assertEqual(unicode, type(MyMessage.definition_package()))
 
     def testDefinitionName_OverrideModule(self):
         """Test message module is overriden by module package name."""
@@ -1711,13 +1711,13 @@ class MessageTest(test_util.TestCase):
         package = 'my.package'
 
         try:
-            self.assertEquals('my.package.MyMessage', MyMessage.definition_name())
-            self.assertEquals('my.package', MyMessage.outer_definition_name())
-            self.assertEquals('my.package', MyMessage.definition_package())
+            self.assertEqual('my.package.MyMessage', MyMessage.definition_name())
+            self.assertEqual('my.package', MyMessage.outer_definition_name())
+            self.assertEqual('my.package', MyMessage.definition_package())
 
-            self.assertEquals(unicode, type(MyMessage.definition_name()))
-            self.assertEquals(unicode, type(MyMessage.outer_definition_name()))
-            self.assertEquals(unicode, type(MyMessage.definition_package()))
+            self.assertEqual(unicode, type(MyMessage.definition_name()))
+            self.assertEqual(unicode, type(MyMessage.outer_definition_name()))
+            self.assertEqual(unicode, type(MyMessage.definition_package()))
         finally:
             del package
 
@@ -1731,11 +1731,11 @@ class MessageTest(test_util.TestCase):
         sys.modules = dict(sys.modules)
         try:
             del sys.modules[__name__]
-            self.assertEquals('MyMessage', MyMessage.definition_name())
-            self.assertEquals(None, MyMessage.outer_definition_name())
-            self.assertEquals(None, MyMessage.definition_package())
+            self.assertEqual('MyMessage', MyMessage.definition_name())
+            self.assertEqual(None, MyMessage.outer_definition_name())
+            self.assertEqual(None, MyMessage.definition_package())
 
-            self.assertEquals(unicode, type(MyMessage.definition_name()))
+            self.assertEqual(unicode, type(MyMessage.definition_name()))
         finally:
             sys.modules = original_modules
 
@@ -1748,19 +1748,19 @@ class MessageTest(test_util.TestCase):
                     pass
 
         module_name = test_util.get_module_name(MessageTest)
-        self.assertEquals('%s.MyMessage.NestedMessage' % module_name,
+        self.assertEqual('%s.MyMessage.NestedMessage' % module_name,
                           MyMessage.NestedMessage.definition_name())
-        self.assertEquals('%s.MyMessage' % module_name,
+        self.assertEqual('%s.MyMessage' % module_name,
                           MyMessage.NestedMessage.outer_definition_name())
-        self.assertEquals(module_name,
+        self.assertEqual(module_name,
                           MyMessage.NestedMessage.definition_package())
 
-        self.assertEquals('%s.MyMessage.NestedMessage.NestedMessage' % module_name,
+        self.assertEqual('%s.MyMessage.NestedMessage.NestedMessage' % module_name,
                           MyMessage.NestedMessage.NestedMessage.definition_name())
-        self.assertEquals(
+        self.assertEqual(
             '%s.MyMessage.NestedMessage' % module_name,
             MyMessage.NestedMessage.NestedMessage.outer_definition_name())
-        self.assertEquals(
+        self.assertEqual(
             module_name,
             MyMessage.NestedMessage.NestedMessage.definition_package())
 
@@ -1772,8 +1772,8 @@ class MessageTest(test_util.TestCase):
             class InnerMessage(messages.Message):
                 pass
 
-        self.assertEquals(None, OuterMessage.message_definition())
-        self.assertEquals(OuterMessage,
+        self.assertEqual(None, OuterMessage.message_definition())
+        self.assertEqual(OuterMessage,
                           OuterMessage.InnerMessage.message_definition())
 
     def testConstructorKwargs(self):
@@ -1786,7 +1786,7 @@ class MessageTest(test_util.TestCase):
         expected = SomeMessage()
         expected.name = 'my name'
         expected.number = 200
-        self.assertEquals(expected, SomeMessage(name='my name', number=200))
+        self.assertEqual(expected, SomeMessage(name='my name', number=200))
 
     def testConstructorNotAField(self):
         """Test kwargs via constructor with wrong names."""
@@ -1805,7 +1805,7 @@ class MessageTest(test_util.TestCase):
             repeated = messages.IntegerField(repeated=True)
 
         instance = SomeMessage()
-        self.assertEquals([], instance.repeated)
+        self.assertEqual([], instance.repeated)
         self.assertTrue(isinstance(instance.repeated, messages.FieldList))
 
     def testCompareAutoInitializedRepeatedFields(self):
@@ -1814,7 +1814,7 @@ class MessageTest(test_util.TestCase):
 
         message1 = SomeMessage(repeated=[])
         message2 = SomeMessage()
-        self.assertNotEquals(message1, message2)
+        self.assertNotEqual(message1, message2)
 
     def testUnknownValues(self):
         """Test message class equality with unknown fields."""
@@ -1823,45 +1823,45 @@ class MessageTest(test_util.TestCase):
             field1 = messages.IntegerField()
 
         message = MyMessage()
-        self.assertEquals([], message.all_unrecognized_fields())
-        self.assertEquals((None, None),
+        self.assertEqual([], message.all_unrecognized_fields())
+        self.assertEqual((None, None),
                           message.get_unrecognized_field_info('doesntexist'))
-        self.assertEquals((None, None),
+        self.assertEqual((None, None),
                           message.get_unrecognized_field_info(
                               'doesntexist', None, None))
-        self.assertEquals(('defaultvalue', 'defaultwire'),
+        self.assertEqual(('defaultvalue', 'defaultwire'),
                           message.get_unrecognized_field_info(
                               'doesntexist', 'defaultvalue', 'defaultwire'))
-        self.assertEquals((3, None),
+        self.assertEqual((3, None),
                           message.get_unrecognized_field_info(
                               'doesntexist', value_default=3))
 
         message.set_unrecognized_field('exists', 9.5, messages.Variant.DOUBLE)
-        self.assertEquals(1, len(message.all_unrecognized_fields()))
+        self.assertEqual(1, len(message.all_unrecognized_fields()))
         self.assertIn('exists', message.all_unrecognized_fields())
-        self.assertEquals((9.5, messages.Variant.DOUBLE),
+        self.assertEqual((9.5, messages.Variant.DOUBLE),
                           message.get_unrecognized_field_info('exists'))
-        self.assertEquals((9.5, messages.Variant.DOUBLE),
+        self.assertEqual((9.5, messages.Variant.DOUBLE),
                           message.get_unrecognized_field_info('exists', 'type',
                                                               1234))
-        self.assertEquals((1234, None),
+        self.assertEqual((1234, None),
                           message.get_unrecognized_field_info('doesntexist', 1234))
 
         message.set_unrecognized_field('another', 'value', messages.Variant.STRING)
-        self.assertEquals(2, len(message.all_unrecognized_fields()))
+        self.assertEqual(2, len(message.all_unrecognized_fields()))
         self.assertIn('exists', message.all_unrecognized_fields())
         self.assertIn('another', message.all_unrecognized_fields())
-        self.assertEquals((9.5, messages.Variant.DOUBLE),
+        self.assertEqual((9.5, messages.Variant.DOUBLE),
                           message.get_unrecognized_field_info('exists'))
-        self.assertEquals(('value', messages.Variant.STRING),
+        self.assertEqual(('value', messages.Variant.STRING),
                           message.get_unrecognized_field_info('another'))
 
         message.set_unrecognized_field('typetest1', ['list', 0, ('test',)],
                                        messages.Variant.STRING)
-        self.assertEquals((['list', 0, ('test',)], messages.Variant.STRING),
+        self.assertEqual((['list', 0, ('test',)], messages.Variant.STRING),
                           message.get_unrecognized_field_info('typetest1'))
         message.set_unrecognized_field('typetest2', '', messages.Variant.STRING)
-        self.assertEquals(('', messages.Variant.STRING),
+        self.assertEqual(('', messages.Variant.STRING),
                           message.get_unrecognized_field_info('typetest2'))
 
     def testStripUnknownValues(self):
@@ -1873,9 +1873,9 @@ class MessageTest(test_util.TestCase):
         message = MyMessage()
 
         message.set_unrecognized_field('exists', 9.5, messages.Variant.DOUBLE)
-        self.assertEquals(1, len(message.all_unrecognized_fields()))
+        self.assertEqual(1, len(message.all_unrecognized_fields()))
         message.strip_unrecognized_fields()
-        self.assertEquals(0, len(message.all_unrecognized_fields()))
+        self.assertEqual(0, len(message.all_unrecognized_fields()))
 
 
 class FindDefinitionTest(test_util.TestCase):
@@ -1992,10 +1992,10 @@ class FindDefinitionTest(test_util.TestCase):
     def testGlobalFind(self):
         """Test finding definitions from fully qualified module names."""
         A = self.DefineMessage('a.b.c', 'A', {})
-        self.assertEquals(A, messages.find_definition('a.b.c.A',
+        self.assertEqual(A, messages.find_definition('a.b.c.A',
                                                       importer=self.Importer))
         B = self.DefineMessage('a.b.c', 'B', {'C': {}})
-        self.assertEquals(B.C, messages.find_definition('a.b.c.B.C',
+        self.assertEqual(B.C, messages.find_definition('a.b.c.B.C',
                                                         importer=self.Importer))
 
     def testRelativeToModule(self):
@@ -2012,33 +2012,33 @@ class FindDefinitionTest(test_util.TestCase):
         D = self.DefineMessage('a.b.d', 'D')
 
         # Find A, B, C and D relative to a.
-        self.assertEquals(A, messages.find_definition(
+        self.assertEqual(A, messages.find_definition(
             'A', a, importer=self.Importer))
-        self.assertEquals(B, messages.find_definition(
+        self.assertEqual(B, messages.find_definition(
             'b.B', a, importer=self.Importer))
-        self.assertEquals(C, messages.find_definition(
+        self.assertEqual(C, messages.find_definition(
             'b.c.C', a, importer=self.Importer))
-        self.assertEquals(D, messages.find_definition(
+        self.assertEqual(D, messages.find_definition(
             'b.d.D', a, importer=self.Importer))
 
         # Find A, B, C and D relative to b.
-        self.assertEquals(A, messages.find_definition(
+        self.assertEqual(A, messages.find_definition(
             'A', b, importer=self.Importer))
-        self.assertEquals(B, messages.find_definition(
+        self.assertEqual(B, messages.find_definition(
             'B', b, importer=self.Importer))
-        self.assertEquals(C, messages.find_definition(
+        self.assertEqual(C, messages.find_definition(
             'c.C', b, importer=self.Importer))
-        self.assertEquals(D, messages.find_definition(
+        self.assertEqual(D, messages.find_definition(
             'd.D', b, importer=self.Importer))
 
         # Find A, B, C and D relative to c.  Module d is the same case as c.
-        self.assertEquals(A, messages.find_definition(
+        self.assertEqual(A, messages.find_definition(
             'A', c, importer=self.Importer))
-        self.assertEquals(B, messages.find_definition(
+        self.assertEqual(B, messages.find_definition(
             'B', c, importer=self.Importer))
-        self.assertEquals(C, messages.find_definition(
+        self.assertEqual(C, messages.find_definition(
             'C', c, importer=self.Importer))
-        self.assertEquals(D, messages.find_definition(
+        self.assertEqual(D, messages.find_definition(
             'd.D', c, importer=self.Importer))
 
     def testRelativeToMessages(self):
@@ -2049,43 +2049,43 @@ class FindDefinitionTest(test_util.TestCase):
         D = A.B.D
 
         # Find relative to A.
-        self.assertEquals(A, messages.find_definition(
+        self.assertEqual(A, messages.find_definition(
             'A', A, importer=self.Importer))
-        self.assertEquals(B, messages.find_definition(
+        self.assertEqual(B, messages.find_definition(
             'B', A, importer=self.Importer))
-        self.assertEquals(C, messages.find_definition(
+        self.assertEqual(C, messages.find_definition(
             'B.C', A, importer=self.Importer))
-        self.assertEquals(D, messages.find_definition(
+        self.assertEqual(D, messages.find_definition(
             'B.D', A, importer=self.Importer))
 
         # Find relative to B.
-        self.assertEquals(A, messages.find_definition(
+        self.assertEqual(A, messages.find_definition(
             'A', B, importer=self.Importer))
-        self.assertEquals(B, messages.find_definition(
+        self.assertEqual(B, messages.find_definition(
             'B', B, importer=self.Importer))
-        self.assertEquals(C, messages.find_definition(
+        self.assertEqual(C, messages.find_definition(
             'C', B, importer=self.Importer))
-        self.assertEquals(D, messages.find_definition(
+        self.assertEqual(D, messages.find_definition(
             'D', B, importer=self.Importer))
 
         # Find relative to C.
-        self.assertEquals(A, messages.find_definition(
+        self.assertEqual(A, messages.find_definition(
             'A', C, importer=self.Importer))
-        self.assertEquals(B, messages.find_definition(
+        self.assertEqual(B, messages.find_definition(
             'B', C, importer=self.Importer))
-        self.assertEquals(C, messages.find_definition(
+        self.assertEqual(C, messages.find_definition(
             'C', C, importer=self.Importer))
-        self.assertEquals(D, messages.find_definition(
+        self.assertEqual(D, messages.find_definition(
             'D', C, importer=self.Importer))
 
         # Find relative to C searching from c.
-        self.assertEquals(A, messages.find_definition(
+        self.assertEqual(A, messages.find_definition(
             'b.A', C, importer=self.Importer))
-        self.assertEquals(B, messages.find_definition(
+        self.assertEqual(B, messages.find_definition(
             'b.A.B', C, importer=self.Importer))
-        self.assertEquals(C, messages.find_definition(
+        self.assertEqual(C, messages.find_definition(
             'b.A.B.C', C, importer=self.Importer))
-        self.assertEquals(D, messages.find_definition(
+        self.assertEqual(D, messages.find_definition(
             'b.A.B.D', C, importer=self.Importer))
 
     def testAbsoluteReference(self):
@@ -2099,13 +2099,13 @@ class FindDefinitionTest(test_util.TestCase):
         aaA = self.DefineMessage('a.a', 'A')
 
         # Always find a.A.
-        self.assertEquals(aA, messages.find_definition('.a.A', None,
+        self.assertEqual(aA, messages.find_definition('.a.A', None,
                                                        importer=self.Importer))
-        self.assertEquals(aA, messages.find_definition('.a.A', a,
+        self.assertEqual(aA, messages.find_definition('.a.A', a,
                                                        importer=self.Importer))
-        self.assertEquals(aA, messages.find_definition('.a.A', aA,
+        self.assertEqual(aA, messages.find_definition('.a.A', aA,
                                                        importer=self.Importer))
-        self.assertEquals(aA, messages.find_definition('.a.A', aaA,
+        self.assertEqual(aA, messages.find_definition('.a.A', aaA,
                                                        importer=self.Importer))
 
     def testFindEnum(self):
@@ -2116,7 +2116,7 @@ class FindDefinitionTest(test_util.TestCase):
 
         A = self.DefineMessage('a', 'A', {'Color': Color})
 
-        self.assertEquals(
+        self.assertEqual(
             Color,
             messages.find_definition('Color', A, importer=self.Importer))
 
@@ -2138,7 +2138,7 @@ class FindDefinitionTest(test_util.TestCase):
         A = self.DefineMessage('a', 'A')
         module_A = self.DefineModule('a.A')
 
-        self.assertEquals(A, messages.find_definition(
+        self.assertEqual(A, messages.find_definition(
             'a.A', None, importer=self.Importer))
 
     def testUnicodeString(self):
@@ -2146,7 +2146,7 @@ class FindDefinitionTest(test_util.TestCase):
         A = self.DefineMessage('a', 'A')
         module_A = self.DefineModule('a.A')
 
-        self.assertEquals(A, messages.find_definition(
+        self.assertEqual(A, messages.find_definition(
             u'a.A', None, importer=self.Importer))
 
 
