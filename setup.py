@@ -41,7 +41,7 @@ setuptools.setup(
     description='Library to define data contracts for JSON and build RESTful services with Webapp2 or Flask',
     url='https://github.com/rmorlok/pytracts',
     author='Ryan Morlok',
-    author_email='ryan.morlok@morlok.com.com',
+    author_email='ryan.morlok@morlok.com',
     # Contained modules and scripts.
     packages=setuptools.find_packages(),
     install_requires=REQUIRED_PACKAGES,

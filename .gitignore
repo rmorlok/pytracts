@@ -1,5 +1,5 @@
 *.pyc
 .idea
-.direnv
 dist
 pytracts.egg-info
+.tox
