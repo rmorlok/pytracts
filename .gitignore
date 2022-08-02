@@ -3,3 +3,4 @@
 dist
 pytracts.egg-info
 .tox
+.eggs
