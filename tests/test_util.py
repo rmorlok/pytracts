@@ -69,7 +69,7 @@ class TestCase(unittest.TestCase):
         try:
             function(*params, **kwargs)
             self.fail('Expected exception %s was not raised' % exception.__name__)
-        except exception, err:
+        except exception as err:
             match = bool(re.match(regexp, str(err)))
             self.assertTrue(match, 'Expected match "%s", found "%s"' % (regexp,
                                                                         err))
@@ -220,7 +220,9 @@ class ModuleInterfaceTest(object):
                 if (attribute not in self.MODULE.__all__ and
                         not isinstance(getattr(self.MODULE, attribute),
                                        types.ModuleType) and
-                            attribute != 'with_statement'):
+                            attribute not in ['with_statement', 'basestring', 'cmp', 'long',
+                                              'unicode', 'with_metaclass', 'parse_qs', 'urlparse',
+                                              'urlencode']):
                     missing_attributes.append(attribute)
         if missing_attributes:
             self.fail('%s are not modules and not defined in __all__.' %
@@ -365,7 +367,7 @@ class PytractsConformanceTestBase(object):
           int32_value: 1020
           bool_value: true
           string_value: u"a string\u044f"
-          bytes_value: "a bytes\xff\xfe"
+          bytes_value: b"a bytes\xff\xfe"
           enum_value: OptionalMessage.SimpleEnum.VAL2
           >
 
@@ -378,7 +380,7 @@ class PytractsConformanceTestBase(object):
           int32_value: [1020, 718]
           bool_value: [true, false]
           string_value: [u"a string\u044f", u"another string"]
-          bytes_value: ["a bytes\xff\xfe", "another bytes"]
+          bytes_value: [b"a bytes\xff\xfe", b"another bytes"]
           enum_value: [OptionalMessage.SimpleEnum.VAL2,
                        OptionalMessage.SimpleEnum.VAL 1]
           >
@@ -435,11 +437,11 @@ class PytractsConformanceTestBase(object):
           expected_encoded: Expected string encoded value.
           actual_encoded: Actual string encoded value.
         """
-        self.assertEquals(expected_encoded, actual_encoded)
+        self.assertEqual(expected_encoded, actual_encoded)
 
     def EncodeDecode(self, encoded, expected_message):
         message = self.PROTOLIB.decode_message(type(expected_message), encoded)
-        self.assertEquals(expected_message, message)
+        self.assertEqual(expected_message, message)
         self.CompareEncoded(encoded, self.PROTOLIB.encode_message(message))
 
     def testEmptyMessage(self):
@@ -466,7 +468,7 @@ class PytractsConformanceTestBase(object):
         message.int32_value = 1020
         message.bool_value = True
         message.string_value = u'a string\u044f'
-        message.bytes_value = 'a bytes\xff\xfe'
+        message.bytes_value = b'a bytes\xff\xfe'
         message.enum_value = OptionalMessage.SimpleEnum.VAL2
 
         self.EncodeDecode(self.encoded_full, message)
@@ -481,7 +483,7 @@ class PytractsConformanceTestBase(object):
         message.int32_value = [1020, 718]
         message.bool_value = [True, False]
         message.string_value = [u'a string\u044f', u'another string']
-        message.bytes_value = ['a bytes\xff\xfe', 'another bytes']
+        message.bytes_value = [b'a bytes\xff\xfe', b'another bytes']
         message.enum_value = [RepeatedMessage.SimpleEnum.VAL2,
                               RepeatedMessage.SimpleEnum.VAL1]
 
@@ -530,10 +532,10 @@ class PytractsConformanceTestBase(object):
                                                       self.unexpected_tag_message)
         # Message should be equal to an empty message, since unknown values aren't
         # included in equality.
-        self.assertEquals(OptionalMessage(), loaded_message)
+        self.assertEqual(OptionalMessage(), loaded_message)
         # Verify that the encoded message matches the source, including the
         # unknown value.
-        self.assertEquals(self.unexpected_tag_message,
+        self.assertEqual(self.unexpected_tag_message,
                           self.PROTOLIB.encode_message(loaded_message))
 
     def testDoNotSendDefault(self):
@@ -583,7 +585,7 @@ class PytractsConformanceTestBase(object):
         message = MyMessage(value=value)
         decoded = self.PROTOLIB.decode_message(
             MyMessage, self.PROTOLIB.encode_message(message))
-        self.assertEquals(decoded.value, value)
+        self.assertEqual(decoded.value, value)
 
     def testDateTimeWithTimeZoneMsInteger(self):
         """Test DateTimeFields with time zones."""
@@ -599,7 +601,7 @@ class PytractsConformanceTestBase(object):
         message = MyMessage(value=value)
         decoded = self.PROTOLIB.decode_message(
             MyMessage, self.PROTOLIB.encode_message(message))
-        self.assertEquals(decoded.value.replace(tzinfo=None), expected_value)
+        self.assertEqual(decoded.value.replace(tzinfo=None), expected_value)
 
     def testDateTimeNoTimeZoneIso8601(self):
         """Test that DateTimeFields are encoded/decoded correctly."""
@@ -611,7 +613,7 @@ class PytractsConformanceTestBase(object):
         message = MyMessage(value=value)
         decoded = self.PROTOLIB.decode_message(
             MyMessage, self.PROTOLIB.encode_message(message))
-        self.assertEquals(decoded.value, value)
+        self.assertEqual(decoded.value, value)
 
     def testDateTimeWithTimeZoneIso8601(self):
         """Test DateTimeFields with time zones."""
@@ -624,7 +626,7 @@ class PytractsConformanceTestBase(object):
         message = MyMessage(value=value)
         decoded = self.PROTOLIB.decode_message(
             MyMessage, self.PROTOLIB.encode_message(message))
-        self.assertEquals(decoded.value, value)
+        self.assertEqual(decoded.value, value)
 
 
 def do_with(context, function, *args, **kwargs):

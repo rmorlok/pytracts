@@ -50,11 +50,13 @@ import traceback
 import types
 import weakref
 import datetime
+import uuid
+from six import with_metaclass
 
 try:
     import iso8601
 except ImportError:
-    import _local_iso8601 as iso8601
+    from . import _local_iso8601 as iso8601
 
 from . import util
 
@@ -76,6 +78,7 @@ __all__ = ['MAX_ENUM_VALUE',
            'UntypedField',
            'DateTimeISO8601Field',
            'DateTimeMsIntegerField',
+           'UUIDField',
            'find_definition',
 
            'Error',
@@ -91,6 +94,15 @@ __all__ = ['MAX_ENUM_VALUE',
            'ValidationError',
            'DefinitionNotFoundError',
 ]
+
+if sys.version_info >= (3, 0, 0):
+    unicode = str
+    basestring = str
+    long = int
+
+    def cmp(a, b):
+        return (a > b) - (a < b)
+
 
 
 # TODO(rafek): Add extended module test to ensure all exceptions
@@ -155,7 +167,7 @@ class ValidationError(Error):
 # Attributes that are reserved by a class definition that
 # may not be used by either Enum or Message class definitions.
 _RESERVED_ATTRIBUTE_NAMES = frozenset(
-    ['__module__', '__doc__'])
+    ['__module__', '__doc__', '__qualname__'])
 
 _POST_INIT_FIELD_ATTRIBUTE_NAMES = frozenset(
     ['name',
@@ -240,7 +252,7 @@ class _DefinitionClass(type):
           class MyMessage(Message):
             ...
 
-          >>> MyMessage.definition_name()
+          >> MyMessage.definition_name()
           some.alternate.package.MyMessage
 
         Returns:
@@ -308,7 +320,7 @@ class _EnumClass(_DefinitionClass):
         # Enum base class does not need to be initialized or locked.
         if bases != (object,):
             # Replace integer with number.
-            for attribute, value in dct.iteritems():
+            for attribute, value in dct.items():
 
                 # Module will be in every enum class.
                 if attribute in _RESERVED_ATTRIBUTE_NAMES:
@@ -352,7 +364,7 @@ class _EnumClass(_DefinitionClass):
         Yields:
           Enumeration instances of the Enum class in arbitrary order.
         """
-        return cls.__by_number.itervalues()
+        return cls.__by_number.values().__iter__()
 
     def names(cls):
         """Get all names for Enum.
@@ -360,7 +372,7 @@ class _EnumClass(_DefinitionClass):
         Returns:
           An iterator for names of the enumeration in arbitrary order.
         """
-        return cls.__by_name.iterkeys()
+        return cls.__by_name.keys()
 
     def numbers(cls):
         """Get all numbers for Enum.
@@ -368,7 +380,7 @@ class _EnumClass(_DefinitionClass):
         Returns:
           An iterator for all numbers of the enumeration in arbitrary order.
         """
-        return cls.__by_number.iterkeys()
+        return cls.__by_number.keys()
 
     def lookup_by_name(cls, name):
         """Look up Enum by name.
@@ -396,12 +408,10 @@ class _EnumClass(_DefinitionClass):
         return len(cls.__by_name)
 
 
-class Enum(object):
+class Enum(with_metaclass(_EnumClass, object)):
     """Base class for all enumerated types."""
 
-    __metaclass__ = _EnumClass
-
-    __slots__ = set(('name', 'number'))
+    __slots__ = {'name', 'number'}
 
     def __new__(cls, index):
         """Acts as look-up routine after class is initialized.
@@ -436,7 +446,7 @@ class Enum(object):
             except KeyError:
                 pass
 
-        raise TypeError('No such value for %s in Enum %s' %
+        raise TypeError("No such value for '%s' in Enum %s" %
                         (index, cls.__name__))
 
     def __init__(self, name, number=None):
@@ -465,10 +475,40 @@ class Enum(object):
     def __repr__(self):
         return '%s(%s, %d)' % (type(self).__name__, self.name, self.number)
 
-    def __cmp__(self, other):
+    # def __eq__(self, other):
+    #     """Order is by number."""
+    #     if isinstance(other, type(self)):
+    #         return self.number == other.number
+    #     return NotImplemented
+    #
+    # def __ne__(self, other):
+    #     """Order is by number."""
+    #     if isinstance(other, type(self)):
+    #         return self.number != other.number
+    #     return NotImplemented
+    #
+    def __lt__(self, other):
         """Order is by number."""
         if isinstance(other, type(self)):
-            return cmp(self.number, other.number)
+            return self.number < other.number
+        return NotImplemented
+
+    def __le__(self, other):
+        """Order is by number."""
+        if isinstance(other, type(self)):
+            return self.number <= other.number
+        return NotImplemented
+
+    def __gt__(self, other):
+        """Order is by number."""
+        if isinstance(other, type(self)):
+            return self.number > other.number
+        return NotImplemented
+
+    def __ge__(self, other):
+        """Order is by number."""
+        if isinstance(other, type(self)):
+            return self.number >= other.number
         return NotImplemented
 
     @classmethod
@@ -576,7 +616,7 @@ class _MessageClass(_DefinitionClass):
 
             enums = []
             messages = []
-            # Must not use iteritems because this loop will change the state of dct.
+
             for key, field in dct.items():
 
                 if key in _RESERVED_ATTRIBUTE_NAMES:
@@ -630,7 +670,7 @@ class _MessageClass(_DefinitionClass):
     def __init__(cls, name, bases, dct):
         """Initializer required to assign references to new class."""
         if bases != (object,):
-            for value in dct.itervalues():
+            for value in dct.values():
                 if isinstance(value, _DefinitionClass) and not value is Message:
                     value._message_definition = weakref.ref(cls)
 
@@ -640,7 +680,7 @@ class _MessageClass(_DefinitionClass):
         _DefinitionClass.__init__(cls, name, bases, dct)
 
 
-class Message(object):
+class Message(with_metaclass(_MessageClass, object)):
     """Base class for user defined message objects.
 
     Used to define messages for efficient transmission across network or
@@ -707,8 +747,6 @@ class Message(object):
       order.check_initialized()
     """
 
-    __metaclass__ = _MessageClass
-
     # Mapping of names (actual value that's used for encoding) to fields
     __by_name = {}
 
@@ -748,7 +786,7 @@ class Message(object):
         self.__unrecognized_fields = {}
 
         assigned = set()
-        for name, value in kwargs.iteritems():
+        for name, value in kwargs.items():
             setattr(self, name, value)
             assigned.add(name)
 
@@ -770,7 +808,7 @@ class Message(object):
         Raises:
           ValidationError: If message is not initialized.
         """
-        for name, field in self.__by_name.iteritems():
+        for name, field in self.__by_name.items():
             value = getattr(self, field.alias)
             if value is None:
                 if field.required:
@@ -787,7 +825,7 @@ class Message(object):
                         else:
                             message_value = field.value_to_message(value)
                             message_value.check_initialized()
-                except ValidationError, err:
+                except ValidationError as err:
                     if not hasattr(err, 'message_name'):
                         err.message_name = type(self).__name__
                     raise
@@ -814,7 +852,7 @@ class Message(object):
         Returns:
           Iterator over all values in arbitrary order.
         """
-        return cls.__by_name.itervalues()
+        return cls.__by_name.values()
 
     @classmethod
     def field_by_name(cls, name):
@@ -903,7 +941,7 @@ class Message(object):
         """
         Get the names of all unrecognized fields in this message.
         """
-        return self.__unrecognized_fields.keys()
+        return list(self.__unrecognized_fields.keys())
 
     def strip_unrecognized_fields(self):
         """
@@ -978,7 +1016,7 @@ class Message(object):
           my_message.string_value = u'A string'
 
           print my_message
-          >>> <MyMessage
+          >> <MyMessage
           ...  integer_value: 42
           ...  string_value: u'A string'>
 
@@ -1087,16 +1125,16 @@ class FieldList(list):
         if self.__message and self.__field:
             setattr(self.__message, self.__field.alias, self)
 
-    def __setslice__(self, i, j, sequence):
-        """Validate slice assignment to list."""
-        self.__field.validate(sequence)
-        list.__setslice__(self, i, j, sequence)
-        self.__notify_message_of_value_change()
+    def __setitem__(self, item, value):
+        """
+        Validate item assignment to list.
+        """
+        if isinstance(item, slice):
+            self.__field.validate(value)
+        else:
+            self.__field.validate_element(value)
 
-    def __setitem__(self, index, value):
-        """Validate item assignment to list."""
-        self.__field.validate_element(value)
-        list.__setitem__(self, index, value)
+        list.__setitem__(self, item, value)
         self.__notify_message_of_value_change()
 
     def append(self, value):
@@ -1121,17 +1159,18 @@ class FieldList(list):
         self.__notify_message_of_value_change()
         return ret_val
 
+
+class _FieldMeta(type):
+
+    def __init__(cls, name, bases, dct):
+        getattr(cls, '_Field__variant_to_type').update(
+            (variant, cls) for variant in dct.get('VARIANTS', []))
+        type.__init__(cls, name, bases, dct)
+
+
 # TODO(rafek): Prevent additional field subclasses.
-class Field(object):
+class Field(with_metaclass(_FieldMeta, object)):
     __variant_to_type = {}
-
-    class __metaclass__(type):
-
-        def __init__(cls, name, bases, dct):
-            getattr(cls, '_Field__variant_to_type').update(
-                (variant, cls) for variant in dct.get('VARIANTS', []))
-            type.__init__(cls, name, bases, dct)
-
     __initialized = False
 
     @util.positional(1)
@@ -1195,7 +1234,7 @@ class Field(object):
         if default is not None:
             try:
                 self.validate_default(default)
-            except ValidationError, err:
+            except ValidationError as err:
                 try:
                     err_name = name or self.name
                 except AttributeError:
@@ -1437,12 +1476,12 @@ class UntypedField(Field):
                           Variant.BOOL,
                           Variant.BYTES,
                           Variant.STRING,
-                          Variant.MESSAGE
+                          Variant.MESSAGE,
     ])
 
     DEFAULT_VARIANT = Variant.STRING
 
-    type = (int, long, float, bool, str, unicode, dict, list)
+    type = (int, long, float, bool, str, unicode, dict, list, uuid.UUID)
 
 
 class IntegerField(Field):
@@ -1458,7 +1497,17 @@ class IntegerField(Field):
 
     DEFAULT_VARIANT = Variant.INT64
 
-    type = (int, long)
+    type = (int, long) if int != long else (int,)
+
+
+class UUIDField(Field):
+    """Field definition for UUID values."""
+
+    VARIANTS = frozenset([Variant.STRING])
+
+    DEFAULT_VARIANT = Variant.STRING
+
+    type = uuid.UUID
 
 
 class FloatField(Field):
@@ -1518,7 +1567,7 @@ class BytesField(Field):
 
     DEFAULT_VARIANT = Variant.BYTES
 
-    type = str
+    type = bytes
 
 
 class StringField(Field):
@@ -1540,7 +1589,7 @@ class StringField(Field):
         if isinstance(value, str):
             try:
                 unicode(value)
-            except UnicodeDecodeError, err:
+            except UnicodeDecodeError as err:
                 try:
                     name = self.name
                 except AttributeError:

@@ -23,9 +23,7 @@ __all__ = ["parse_date", "ParseError", "UTC"]
 LOG = logging.getLogger(__name__)
 
 if sys.version_info >= (3, 0, 0):
-    _basestring = str
-else:
-    _basestring = basestring
+    basestring = str
 
 
 # Adapted from http://delete.me.uk/2005/03/iso8601.html
@@ -187,7 +185,7 @@ def parse_date(datestring, default_timezone=UTC):
              constructing the datetime instance.
 
     """
-    if not isinstance(datestring, _basestring):
+    if not isinstance(datestring, basestring):
         raise ParseError("Expecting a string %r" % datestring)
     m = ISO8601_REGEX.match(datestring)
     if not m:

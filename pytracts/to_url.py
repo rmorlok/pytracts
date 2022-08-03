@@ -89,13 +89,18 @@ Helper classes:
 __author__ = 'rafek@google.com (Rafe Kaplan)'
 
 import re
-import urllib
-import urlparse
+import sys
+import base64
+
+try:
+    from urlparse import urlparse, parse_qs, urlencode
+except ImportError:
+    from urllib.parse import urlparse, parse_qs, urlencode
 
 try:
     import iso8601
 except ImportError:
-    import _local_iso8601 as iso8601
+    from . import _local_iso8601 as iso8601
 
 from . import message_types
 from . import messages
@@ -107,6 +112,14 @@ __all__ = ['CONTENT_TYPE',
            'decode_message',
            'decode_message_from_url',
 ]
+
+if sys.version_info >= (3, 0, 0):
+    unicode = str
+    basestring = str
+    long = int
+
+    def cmp(a, b):
+        return (a > b) - (a < b)
 
 CONTENT_TYPE = 'application/x-www-form-urlencoded'
 
@@ -429,16 +442,16 @@ class URLEncodedRequestBuilder(object):
             elif isinstance(field, messages.DateTimeISO8601Field):
                 try:
                     converted_value = iso8601.parse_date(value, default_timezone=None)
-                except iso8601.ParseError, err:
-                    raise messages.DecodeError(err)
+                except iso8601.ParseError as err:
+                    raise messages.DecodeError('iso8601 decoding error: %s' % err)
 
             elif isinstance(field, messages.DateTimeMsIntegerField):
                 try:
                     converted_value = util.ms_to_datetime(int(value))
-                except TypeError, err:
-                    raise messages.DecodeError(err)
-                except ValueError, err:
-                    raise messages.DecodeError(err)
+                except TypeError as err:
+                    raise messages.DecodeError('datetime decoding error: %s' % err)
+                except ValueError as err:
+                    raise messages.DecodeError('datetime decoding error: %s' % err)
 
             elif isinstance(field, messages.MessageField):
                 # Just make sure it's instantiated.  Assignment to field or
@@ -446,13 +459,15 @@ class URLEncodedRequestBuilder(object):
                 self.__get_or_create_path(path)
                 return True
             elif isinstance(field, messages.StringField):
-                converted_value = value.decode('utf-8')
+                converted_value = value
             elif isinstance(field, messages.BooleanField):
                 converted_value = value.lower() == 'true' and True or False
+            elif isinstance(field, messages.BytesField):
+                converted_value = base64.b64decode(value)
             else:
                 try:
                     converted_value = field.type(value)
-                except TypeError:
+                except (TypeError, ValueError):
                     raise messages.DecodeError('Invalid enum value "%s"' % value)
 
             if field.repeated:
@@ -541,9 +556,11 @@ def encode_message(message, prefix=''):
                         parameters.append((field_name, ''))
                 elif isinstance(field, messages.BooleanField):
                     parameters.append((field_name, item and 'true' or 'false'))
+                elif isinstance(field, messages.BytesField):
+                    parameters.append((field_name, base64.b64encode(item).decode('utf-8')))
                 else:
-                    if isinstance(item, unicode):
-                        item = item.encode('utf-8')
+                    #if isinstance(item, unicode):
+                    #    item = item.encode('utf-8')
                     parameters.append((field_name, str(item)))
 
         return has_any_values
@@ -558,7 +575,7 @@ def encode_message(message, prefix=''):
         for value in values:
             parameters.append((key, value))
 
-    return urllib.urlencode(parameters)
+    return urlencode(parameters)
 
 
 def decode_message(message_type, encoded_message, **kwargs):
@@ -574,8 +591,8 @@ def decode_message(message_type, encoded_message, **kwargs):
     """
     message = message_type()
     builder = URLEncodedRequestBuilder(message, **kwargs)
-    arguments = urlparse.parse_qs(encoded_message, keep_blank_values=True)
-    for argument, values in sorted(arguments.iteritems()):
+    arguments = parse_qs(encoded_message, keep_blank_values=True)
+    for argument, values in sorted(arguments.items()):
         added = builder.add_parameter(argument, values)
         # Save off any unknown values, so they're still accessible.
         if not added:
@@ -596,4 +613,4 @@ def decode_message_from_url(message_type, url, **kwargs):
 
     :return: the message
     """
-    return decode_message(message_type=message_type, encoded_message=urlparse.urlparse(url).query, **kwargs)
+    return decode_message(message_type=message_type, encoded_message=urlparse(url).query, **kwargs)

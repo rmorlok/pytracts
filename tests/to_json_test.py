@@ -30,6 +30,14 @@ from pytracts import to_json
 
 import json
 
+try:
+    from importlib import reload
+except ImportError:
+    try:
+        from imp import reload
+    except:
+        # Python 2.x
+        reload = reload
 
 class CustomField(messages.MessageField):
     """Custom MessageField class."""
@@ -85,7 +93,7 @@ class ProtojsonTest(test_util.TestCase,
 
     def CompareEncoded(self, expected_encoded, actual_encoded):
         """JSON encoding will be laundered to remove string differences."""
-        self.assertEquals(json.loads(expected_encoded),
+        self.assertEqual(json.loads(expected_encoded),
                           json.loads(actual_encoded))
 
     encoded_empty_message = '{}'
@@ -160,7 +168,7 @@ class ProtojsonTest(test_util.TestCase,
         message = to_json.decode_message(MyMessage, '{"a_float": 10}')
 
         self.assertTrue(isinstance(message.a_float, float))
-        self.assertEquals(10.0, message.a_float)
+        self.assertEqual(10.0, message.a_float)
 
     def testConvertStringToNumbers(self):
         """Test that strings passed to integer fields are converted."""
@@ -171,7 +179,7 @@ class ProtojsonTest(test_util.TestCase,
                                                "a_repeated_float": ["1.5", "2", 10]
                                                }""")
 
-        self.assertEquals(MyMessage(an_integer=10,
+        self.assertEqual(MyMessage(an_integer=10,
                                     a_float=3.5,
                                     a_repeated=[1, 2],
                                     a_repeated_float=[1.5, 2.0, 10.0]),
@@ -196,7 +204,7 @@ class ProtojsonTest(test_util.TestCase,
         expected_message = MyMessage()
         expected_message.an_enum = MyMessage.Color.GREEN
 
-        self.assertEquals(expected_message, message)
+        self.assertEqual(expected_message, message)
 
     def testNullValues(self):
         """Test that null values overwrite existing values."""
@@ -204,7 +212,7 @@ class ProtojsonTest(test_util.TestCase,
         m.an_integer = None
         m.a_nested = None
 
-        self.assertEquals(m,
+        self.assertEqual(m,
                           to_json.decode_message(MyMessage,
                                                    ('{"an_integer": null,'
                                                     ' "a_nested": null'
@@ -214,7 +222,7 @@ class ProtojsonTest(test_util.TestCase,
         """Test that empty lists are not ignored."""
         m = MyMessage()
         m.a_repeated = []
-        self.assertEquals(m,
+        self.assertEqual(m,
                           to_json.decode_message(MyMessage,
                                                    '{"a_repeated": []}'))
 
@@ -242,19 +250,19 @@ class ProtojsonTest(test_util.TestCase,
     def testMergeEmptyString(self):
         """Test merging the empty or space only string."""
         message = to_json.decode_message(test_util.OptionalMessage, '')
-        self.assertEquals(test_util.OptionalMessage(), message)
+        self.assertEqual(test_util.OptionalMessage(), message)
 
         message = to_json.decode_message(test_util.OptionalMessage, ' ')
-        self.assertEquals(test_util.OptionalMessage(), message)
+        self.assertEqual(test_util.OptionalMessage(), message)
 
     def testProtojsonUnrecognizedFieldName(self):
         """Test that unrecognized fields are saved and can be accessed."""
         decoded = to_json.decode_message(MyMessage,
                                            ('{"an_integer": 1, "unknown_val": 2}'))
-        self.assertEquals(decoded.an_integer, 1)
-        self.assertEquals(1, len(decoded.all_unrecognized_fields()))
-        self.assertEquals('unknown_val', decoded.all_unrecognized_fields()[0])
-        self.assertEquals((2, messages.Variant.INT64),
+        self.assertEqual(decoded.an_integer, 1)
+        self.assertEqual(1, len(decoded.all_unrecognized_fields()))
+        self.assertEqual('unknown_val', decoded.all_unrecognized_fields()[0])
+        self.assertEqual((2, messages.Variant.INT64),
                           decoded.get_unrecognized_field_info('unknown_val'))
 
     def testProtojsonUnrecognizedFieldNumber(self):
@@ -263,16 +271,16 @@ class ProtojsonTest(test_util.TestCase,
             MyMessage,
             '{"an_integer": 1, "1001": "unknown", "-123": "negative", '
             '"456_mixed": 2}')
-        self.assertEquals(decoded.an_integer, 1)
-        self.assertEquals(3, len(decoded.all_unrecognized_fields()))
+        self.assertEqual(decoded.an_integer, 1)
+        self.assertEqual(3, len(decoded.all_unrecognized_fields()))
         self.assertIn(1001, decoded.all_unrecognized_fields())
-        self.assertEquals(('unknown', messages.Variant.STRING),
+        self.assertEqual(('unknown', messages.Variant.STRING),
                           decoded.get_unrecognized_field_info(1001))
         self.assertIn('-123', decoded.all_unrecognized_fields())
-        self.assertEquals(('negative', messages.Variant.STRING),
+        self.assertEqual(('negative', messages.Variant.STRING),
                           decoded.get_unrecognized_field_info('-123'))
         self.assertIn('456_mixed', decoded.all_unrecognized_fields())
-        self.assertEquals((2, messages.Variant.INT64),
+        self.assertEqual((2, messages.Variant.INT64),
                           decoded.get_unrecognized_field_info('456_mixed'))
 
     def testProtojsonUnrecognizedNull(self):
@@ -280,8 +288,8 @@ class ProtojsonTest(test_util.TestCase,
         decoded = to_json.decode_message(
             MyMessage,
             '{"an_integer": 1, "unrecognized_null": null}')
-        self.assertEquals(decoded.an_integer, 1)
-        self.assertEquals(decoded.all_unrecognized_fields(), [])
+        self.assertEqual(decoded.an_integer, 1)
+        self.assertEqual(decoded.all_unrecognized_fields(), [])
 
     def testUnrecognizedFieldVariants(self):
         """Test that unrecognized fields are mapped to the right variants."""
@@ -297,11 +305,11 @@ class ProtojsonTest(test_util.TestCase,
                  messages.Variant.STRING),
                 ('{"an_integer": 1, "unknown_val": true}', messages.Variant.BOOL)):
             decoded = to_json.decode_message(MyMessage, encoded)
-            self.assertEquals(decoded.an_integer, 1)
-            self.assertEquals(1, len(decoded.all_unrecognized_fields()))
-            self.assertEquals('unknown_val', decoded.all_unrecognized_fields()[0])
+            self.assertEqual(decoded.an_integer, 1)
+            self.assertEqual(1, len(decoded.all_unrecognized_fields()))
+            self.assertEqual('unknown_val', decoded.all_unrecognized_fields()[0])
             _, decoded_variant = decoded.get_unrecognized_field_info('unknown_val')
-            self.assertEquals(expected_variant, decoded_variant)
+            self.assertEqual(expected_variant, decoded_variant)
 
     def testDecodeDateTime(self):
         for datetime_string, datetime_vals in (
@@ -312,7 +320,7 @@ class ProtojsonTest(test_util.TestCase,
             expected_message = MyMessage(
                 a_datetime_iso8601=datetime(*datetime_vals))
 
-            self.assertEquals(expected_message, message)
+            self.assertEqual(expected_message, message)
 
     def testDecodeInvalidDateTime(self):
         self.assertRaises(messages.DecodeError, to_json.decode_message,
@@ -339,7 +347,7 @@ class ProtojsonTest(test_util.TestCase,
                 datetime(2010, 1, 21, 9, 52),
                 datetime(2000, 1, 1, 1, 0, 59, 999999)])
 
-        self.assertEquals(expected_message, message)
+        self.assertEqual(expected_message, message)
 
     def testDecodeDateTimeMsInteger(self):
         for datetime_int, datetime_vals in (
@@ -350,7 +358,7 @@ class ProtojsonTest(test_util.TestCase,
             expected_message = MyMessage(
                 a_datetime_ms_integer=datetime(*datetime_vals))
 
-            self.assertEquals(expected_message, message)
+            self.assertEqual(expected_message, message)
 
     def testDecodeInvalidDateTimeMsInteger(self):
         self.assertRaises(messages.DecodeError, to_json.decode_message,
@@ -377,11 +385,11 @@ class ProtojsonTest(test_util.TestCase,
                 datetime(2010, 1, 21, 9, 52),
                 datetime(2000, 1, 1, 1, 0, 59, 999000)])
 
-        self.assertEquals(expected_message, message)
+        self.assertEqual(expected_message, message)
 
     def testDecodeCustom(self):
         message = to_json.decode_message(MyMessage, '{"a_custom": 1}')
-        self.assertEquals(MyMessage(a_custom=1), message)
+        self.assertEqual(MyMessage(a_custom=1), message)
 
     def testDecodeInvalidCustom(self):
         self.assertRaises(messages.ValidationError, to_json.decode_message,
@@ -394,13 +402,13 @@ class ProtojsonTest(test_util.TestCase,
     def testDecodeRepeatedCustom(self):
         message = to_json.decode_message(
             MyMessage, '{"a_repeated_custom": [1, 2, 3]}')
-        self.assertEquals(MyMessage(a_repeated_custom=[1, 2, 3]), message)
+        self.assertEqual(MyMessage(a_repeated_custom=[1, 2, 3]), message)
 
     def testDecodeBadBase64BytesField(self):
         """Test decoding improperly encoded base64 bytes value."""
         self.assertRaisesWithRegexpMatch(
             messages.DecodeError,
-            'Base64 decoding error: Incorrect padding',
+            '.*Invalid base64-encoded string.*',
             to_json.decode_message,
             test_util.OptionalMessage,
             '{"bytes_value": "abcdefghijklmnopq"}')
@@ -442,14 +450,14 @@ class ProtojsonTest(test_util.TestCase,
 
         m = to_json.decode_message(Foo, '{"robert": "smith", "ryan": "morlok"}')
 
-        self.assertEquals("smith", m.bob)
-        self.assertEquals("morlok", m.ryan)
+        self.assertEqual("smith", m.bob)
+        self.assertEqual("morlok", m.ryan)
 
         f = Foo()
         f.bob = "smith"
         f.ryan = "morlok"
 
-        self.assertEquals('{"robert": "smith", "ryan": "morlok"}', to_json.encode_message(f))
+        self.assertEqual(json.loads('{"robert": "smith", "ryan": "morlok"}'), json.loads(to_json.encode_message(f)))
 
     def test_assigned_values_rendered(self):
         class Animals(messages.Message):
@@ -457,94 +465,94 @@ class ProtojsonTest(test_util.TestCase,
             cow = messages.StringField()
 
         a = Animals()
-        self.assertEquals('{}', to_json.encode_message(a))
+        self.assertEqual('{}', to_json.encode_message(a))
 
         a = Animals()
         a.cow = "moo"
-        self.assertEquals('{"cow": "moo"}', to_json.encode_message(a))
+        self.assertEqual('{"cow": "moo"}', to_json.encode_message(a))
 
         a = Animals()
         a.cow = None
-        self.assertEquals('{"cow": null}', to_json.encode_message(a))
+        self.assertEqual('{"cow": null}', to_json.encode_message(a))
 
         a = Animals()
         a.bird = []
-        self.assertEquals('{"bird": []}', to_json.encode_message(a))
+        self.assertEqual('{"bird": []}', to_json.encode_message(a))
 
         a = Animals()
         a.bird = ["quack", "cheep", "honk"]
-        self.assertEquals('{"bird": ["quack", "cheep", "honk"]}', to_json.encode_message(a))
+        self.assertEqual('{"bird": ["quack", "cheep", "honk"]}', to_json.encode_message(a))
 
         a = Animals()
         a.cow = "moo"
         a.bird = ["quack", "cheep", "honk"]
-        self.assertEquals('{"bird": ["quack", "cheep", "honk"], "cow": "moo"}', to_json.encode_message(a))
+        self.assertEqual(json.loads('{"bird": ["quack", "cheep", "honk"], "cow": "moo"}'), json.loads(to_json.encode_message(a)))
 
     def test_untyped_field_encode(self):
         class Foo(messages.Message):
             bar = messages.UntypedField()
 
         f = Foo()
-        self.assertEquals('{}', to_json.encode_message(f))
+        self.assertEqual('{}', to_json.encode_message(f))
 
         f = Foo()
         f.bar = 123
-        self.assertEquals('{"bar": 123}', to_json.encode_message(f))
+        self.assertEqual('{"bar": 123}', to_json.encode_message(f))
 
         f = Foo()
         f.bar = "meow"
-        self.assertEquals('{"bar": "meow"}', to_json.encode_message(f))
+        self.assertEqual('{"bar": "meow"}', to_json.encode_message(f))
 
         f = Foo()
         f.bar = True
-        self.assertEquals('{"bar": true}', to_json.encode_message(f))
+        self.assertEqual('{"bar": true}', to_json.encode_message(f))
 
         f = Foo()
         f.bar = 1.23
-        self.assertEquals('{"bar": 1.23}', to_json.encode_message(f))
+        self.assertEqual('{"bar": 1.23}', to_json.encode_message(f))
 
         f = Foo()
         f.bar = None
-        self.assertEquals('{"bar": null}', to_json.encode_message(f))
+        self.assertEqual('{"bar": null}', to_json.encode_message(f))
 
         f = Foo()
         f.bar = [[123, 1.23, "woof", True], "meow"]
-        self.assertEquals('{"bar": [[123, 1.23, "woof", true], "meow"]}', to_json.encode_message(f))
+        self.assertEqual('{"bar": [[123, 1.23, "woof", true], "meow"]}', to_json.encode_message(f))
 
     def test_untyped_field_decode(self):
         class Foo(messages.Message):
             bar = messages.UntypedField()
 
         f = Foo()
-        self.assertEquals(f, to_json.decode_message(Foo, '{}'))
+        self.assertEqual(f, to_json.decode_message(Foo, '{}'))
 
         f = Foo()
         f.bar = 123
-        self.assertEquals(f, to_json.decode_message(Foo, '{"bar": 123}'))
+        self.assertEqual(f, to_json.decode_message(Foo, '{"bar": 123}'))
 
         f = Foo()
         f.bar = "meow"
-        self.assertEquals(f, to_json.decode_message(Foo, '{"bar": "meow"}'))
+        self.assertEqual(f, to_json.decode_message(Foo, '{"bar": "meow"}'))
 
         f = Foo()
         f.bar = True
-        self.assertEquals(f, to_json.decode_message(Foo, '{"bar": true}'))
+        self.assertEqual(f, to_json.decode_message(Foo, '{"bar": true}'))
 
         f = Foo()
         f.bar = 1.23
-        self.assertEquals(f, to_json.decode_message(Foo, '{"bar": 1.23}'))
+        self.assertEqual(f, to_json.decode_message(Foo, '{"bar": 1.23}'))
 
         f = Foo()
         f.bar = 1.23
-        self.assertEquals(f, to_json.decode_message(Foo, '{"bar": 1.23}'))
+        self.assertEqual(f, to_json.decode_message(Foo, '{"bar": 1.23}'))
 
         f = Foo()
         f.bar = None
-        self.assertEquals(f, to_json.decode_message(Foo, '{"bar": null}'))
+        self.assertEqual(f, to_json.decode_message(Foo, '{"bar": null}'))
 
         f = Foo()
         f.bar = [[123, 1.23, "woof", True], "meow"]
-        self.assertEquals(f, to_json.decode_message(Foo, '{"bar": [[123, 1.23, "woof", true], "meow"]}'))
+        self.assertEqual(f, to_json.decode_message(Foo, '{"bar": [[123, 1.23, "woof", true], "meow"]}'))
 
 
     def test_untyped_field_repeated_encode(self):
@@ -553,7 +561,7 @@ class ProtojsonTest(test_util.TestCase,
 
         f = Foo()
         f.bar = [123, "woof", 1.23, True]
-        self.assertEquals('{"bar": [123, "woof", 1.23, true]}', to_json.encode_message(f))
+        self.assertEqual('{"bar": [123, "woof", 1.23, true]}', to_json.encode_message(f))
 
     def test_untyped_field_repeated_decode(self):
         class Foo(messages.Message):
@@ -561,7 +569,54 @@ class ProtojsonTest(test_util.TestCase,
 
         f = Foo()
         f.bar = [123, "woof", 1.23, True]
-        self.assertEquals(f, to_json.decode_message(Foo, '{"bar": [123, "woof", 1.23, true]}'))
+        self.assertEqual(f, to_json.decode_message(Foo, '{"bar": [123, "woof", 1.23, true]}'))
+
+    def test_uuid_field_encode(self):
+        from uuid import UUID
+
+        class Foo(messages.Message):
+            bar = messages.UUIDField()
+
+        f = Foo(bar=UUID("06335e84-2872-4914-8c5d-3ed07d2a2f16"))
+        self.assertEqual('{"bar": "06335e84-2872-4914-8c5d-3ed07d2a2f16"}', to_json.encode_message(f))
+
+    def test_uuid_field_encode_repeated(self):
+        from uuid import UUID
+        class Foo(messages.Message):
+            bar = messages.UUIDField(repeated=True)
+
+        f = Foo(bar=[UUID("11115e84-2872-4914-8c5d-3ed07d2a2f16"), UUID("22225e84-2872-4914-8c5d-3ed07d2a2f16")])
+        self.assertEqual(to_json.encode_message(f), '{"bar": ["11115e84-2872-4914-8c5d-3ed07d2a2f16", "22225e84-2872-4914-8c5d-3ed07d2a2f16"]}')
+
+    def test_uuid_field_decode(self):
+        from uuid import UUID
+        class Foo(messages.Message):
+            bar = messages.UUIDField()
+
+        f = Foo(bar=UUID("06335e84-2872-4914-8c5d-3ed07d2a2f16"))
+        self.assertEqual(f, to_json.decode_message(Foo, '{"bar": "06335e84-2872-4914-8c5d-3ed07d2a2f16"}'))
+
+    def test_uuid_field_decode_repeated(self):
+        from uuid import UUID
+        class Foo(messages.Message):
+            bar = messages.UUIDField(repeated=True)
+
+        f = Foo(bar=[UUID("11115e84-2872-4914-8c5d-3ed07d2a2f16"), UUID("22225e84-2872-4914-8c5d-3ed07d2a2f16")])
+        self.assertEqual(f, to_json.decode_message(Foo, '{"bar": ["11115e84-2872-4914-8c5d-3ed07d2a2f16", "22225e84-2872-4914-8c5d-3ed07d2a2f16"]}'))
+
+    def test_uuid_field_decode_bad(self):
+        class Foo(messages.Message):
+            bar = messages.UUIDField()
+
+        with self.assertRaises(messages.DecodeError):
+            to_json.decode_message(Foo, '{"bar": "bad"}')
+
+    def test_uuid_field_decode_bad_repeated(self):
+        class Foo(messages.Message):
+            bar = messages.UUIDField(repeated=True)
+
+        with self.assertRaises(messages.DecodeError):
+            to_json.decode_message(Foo, '{"bar": ["06335e84-2872-4914-8c5d-3ed07d2a2f16", "bad"]}')
 
     def test_dict_field_encode(self):
         class GrabBag(messages.Message):
@@ -569,29 +624,29 @@ class ProtojsonTest(test_util.TestCase,
             items = messages.DictField()
 
         gb = GrabBag()
-        self.assertEquals('{}', to_json.encode_message(gb))
+        self.assertEqual('{}', to_json.encode_message(gb))
 
         gb = GrabBag()
         gb.item_count = 123
-        self.assertEquals('{"item_count": 123}', to_json.encode_message(gb))
+        self.assertEqual('{"item_count": 123}', to_json.encode_message(gb))
 
         gb = GrabBag()
         gb.item_count = 123
         gb.items = {}
-        self.assertEquals('{"items": {}, "item_count": 123}', to_json.encode_message(gb))
+        self.assertEqual(json.loads('{"items": {}, "item_count": 123}'), json.loads(to_json.encode_message(gb)))
 
         gb = GrabBag()
         gb.item_count = 123
         gb.items = {'a': 'b', 'foo': 'bar'}
-        self.assertEquals('{"items": {"a": "b", "foo": "bar"}, "item_count": 123}', to_json.encode_message(gb))
+        self.assertEqual(json.loads('{"items": {"a": "b", "foo": "bar"}, "item_count": 123}'), json.loads(to_json.encode_message(gb)))
 
         gb = GrabBag()
         gb.items = {'a': datetime(2010, 11, 13, 14, 15, 16), 'b': date(2009, 10, 11), 'c': time(1, 2, 3)}
-        self.assertEquals('{"items": {"a": "2010-11-13T14:15:16", "c": "01:02:03", "b": "2009-10-11"}}', to_json.encode_message(gb))
+        self.assertEqual(json.loads('{"items": {"a": "2010-11-13T14:15:16", "c": "01:02:03", "b": "2009-10-11"}}'), json.loads(to_json.encode_message(gb)))
 
         gb = GrabBag()
         gb.items = {'nested': {'a': datetime(2010, 11, 13, 14, 15, 16), 'b': date(2009, 10, 11), 'c': time(1, 2, 3)}}
-        self.assertEquals('{"items": {"nested": {"a": "2010-11-13T14:15:16", "c": "01:02:03", "b": "2009-10-11"}}}', to_json.encode_message(gb))
+        self.assertEqual(json.loads('{"items": {"nested": {"a": "2010-11-13T14:15:16", "c": "01:02:03", "b": "2009-10-11"}}}'), json.loads(to_json.encode_message(gb)))
 
     def test_dict_field_decode(self):
         class GrabBag(messages.Message):
@@ -599,27 +654,27 @@ class ProtojsonTest(test_util.TestCase,
             items = messages.DictField()
 
         gb = GrabBag()
-        self.assertEquals(gb, to_json.decode_message(GrabBag, '{}'))
+        self.assertEqual(gb, to_json.decode_message(GrabBag, '{}'))
 
         gb = GrabBag()
         gb.item_count = 123
-        self.assertEquals(gb, to_json.decode_message(GrabBag, '{"item_count": 123}'))
+        self.assertEqual(gb, to_json.decode_message(GrabBag, '{"item_count": 123}'))
 
         gb = GrabBag()
         gb.item_count = 123
         gb.items = {}
-        self.assertEquals(gb, to_json.decode_message(GrabBag, '{"items": {}, "item_count": 123}'))
+        self.assertEqual(gb, to_json.decode_message(GrabBag, '{"items": {}, "item_count": 123}'))
 
         gb = GrabBag()
         gb.item_count = 123
         gb.items = {'a': 'b', 'foo': 'bar'}
-        self.assertEquals(gb, to_json.decode_message(GrabBag, '{"items": {"a": "b", "foo": "bar"}, "item_count": 123}'))
+        self.assertEqual(gb, to_json.decode_message(GrabBag, '{"items": {"a": "b", "foo": "bar"}, "item_count": 123}'))
 
         gb = GrabBag()
         gb.items = {u'a': u"2010-11-13T14:15:16", u'b': u"01:02:03", u'c': u"2009-10-11"}
 
         # Decode doesn't reverse dates in arbitrary dicts
-        self.assertEquals(gb, to_json.decode_message(GrabBag, '{"items": {"a": "2010-11-13T14:15:16", "b": "01:02:03", "c": "2009-10-11"}}'))
+        self.assertEqual(gb, to_json.decode_message(GrabBag, '{"items": {"a": "2010-11-13T14:15:16", "b": "01:02:03", "c": "2009-10-11"}}'))
 
 
 
@@ -726,7 +781,7 @@ class TestJsonDependencyLoading(test_util.TestCase):
         # This will cause to_json to reload with the default json module
         # instead of simplejson.
         reload(to_json)
-        self.assertEquals('json', to_json.json.name)
+        self.assertEqual('json', to_json.json.name)
 
     def testLoadProtojsonWithSimplejsonModule(self):
         """Test loading to_json module with simplejson dependency."""
@@ -735,7 +790,7 @@ class TestJsonDependencyLoading(test_util.TestCase):
         # This will cause to_json to reload with the default json module
         # instead of simplejson.
         reload(to_json)
-        self.assertEquals('simplejson', to_json.json.name)
+        self.assertEqual('simplejson', to_json.json.name)
 
     def testLoadProtojsonWithInvalidJsonModule(self):
         """Loading to_json module with an invalid json defaults to simplejson."""
@@ -744,7 +799,7 @@ class TestJsonDependencyLoading(test_util.TestCase):
 
         # Ignore bad module and default back to simplejson.
         reload(to_json)
-        self.assertEquals('simplejson', to_json.json.name)
+        self.assertEqual('simplejson', to_json.json.name)
 
     def testLoadProtojsonWithInvalidJsonModuleAndNoSimplejson(self):
         """Loading to_json module with invalid json and no simplejson."""

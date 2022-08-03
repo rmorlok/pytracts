@@ -27,15 +27,17 @@ Public functions:
 
 __author__ = 'rafek@google.com (Rafe Kaplan)'
 
-import cStringIO
+import sys
 import base64
 import logging
 import datetime
+import binascii
+import uuid
 
 try:
     import iso8601
 except ImportError:
-    import _local_iso8601 as iso8601
+    from . import _local_iso8601 as iso8601
 
 from . import message_types
 from . import messages
@@ -49,6 +51,14 @@ __all__ = [
     'decode_message',
     'JsonEncoder',
 ]
+
+if sys.version_info >= (3, 0, 0):
+    unicode = str
+    basestring = str
+    long = int
+
+    def cmp(a, b):
+        return (a > b) - (a < b)
 
 
 def _load_json_module():
@@ -78,7 +88,7 @@ def _load_json_module():
                 raise ImportError(message)
             else:
                 return module
-        except ImportError, err:
+        except ImportError as err:
             if not first_import_error:
                 first_import_error = err
 
@@ -133,7 +143,8 @@ class MessageJSONEncoder(json.JSONEncoder):
 
 
 class JsonEncoder(object):
-    """Pytracts JSON implementation class.
+    """
+    Pytracts JSON implementation class.
 
     Implementation of JSON based protocol used for serializing and deserializing
     message objects.  Instances of remote.ProtocolConfig constructor or used with
@@ -163,7 +174,7 @@ class JsonEncoder(object):
 
         d = d.copy()
 
-        for key in d.iterkeys():
+        for key in d.keys():
             if isinstance(d[key], datetime.datetime) or isinstance(d[key], datetime.date) or isinstance(d[key], datetime.time):
                 d[key] = d[key].isoformat()
             if isinstance(d[key], dict):
@@ -183,9 +194,9 @@ class JsonEncoder(object):
         """
         if isinstance(field, messages.BytesField):
             if field.repeated:
-                value = [base64.b64encode(byte) for byte in value]
+                value = [base64.b64encode(byte).decode("utf-8") for byte in value]
             else:
-                value = base64.b64encode(value)
+                value = base64.b64encode(value).decode("utf-8")
         elif isinstance(field, messages.DateTimeISO8601Field):
             # DateTimeField stores its data as a ISO 8601 compliant string.
             if field.repeated:
@@ -198,6 +209,11 @@ class JsonEncoder(object):
                 value = [util.datetime_to_ms(i) for i in value]
             else:
                 value = util.datetime_to_ms(value)
+        elif isinstance(field, messages.UUIDField):
+            if field.repeated:
+                value = [str(uuid) for uuid in value]
+            else:
+                value = str(value)
         elif isinstance(field, messages.DictField):
             value = self.prep_dict(value)
 
@@ -285,7 +301,7 @@ class JsonEncoder(object):
             is as parsed from JSON.  Nested objects will also be dictionaries.
         """
         message = message_type()
-        for key, value in dictionary.iteritems():
+        for key, value in dictionary.items():
             try:
                 field = message.field_by_name(key)
             except KeyError:
@@ -341,22 +357,32 @@ class JsonEncoder(object):
         elif isinstance(field, messages.BytesField):
             try:
                 return base64.b64decode(value)
-            except TypeError, err:
+            except TypeError as err:
+                raise messages.DecodeError('Base64 decoding error: %s' % err)
+            except binascii.Error as err:
                 raise messages.DecodeError('Base64 decoding error: %s' % err)
 
         elif isinstance(field, messages.DateTimeISO8601Field):
             try:
                 return iso8601.parse_date(value, default_timezone=None)
-            except iso8601.ParseError, err:
-                raise messages.DecodeError(err)
+            except iso8601.ParseError as err:
+                raise messages.DecodeError('iso8601 decoding error: %s' % err)
 
         elif isinstance(field, messages.DateTimeMsIntegerField):
             try:
                 return util.ms_to_datetime(value)
-            except TypeError, err:
-                raise messages.DecodeError(err)
-            except ValueError, err:
-                raise messages.DecodeError(err)
+            except TypeError as err:
+                raise messages.DecodeError('datetime decoding error: %s' % err)
+            except ValueError as err:
+                raise messages.DecodeError('datetime decoding error: %s' % err)
+
+        elif isinstance(field, messages.UUIDField):
+            try:
+                return uuid.UUID(value)
+            except TypeError as err:
+                raise messages.DecodeError('uuid decoding error: %s' % err)
+            except ValueError as err:
+                raise messages.DecodeError('uuid decoding error: %s' % err)
 
         elif (isinstance(field, messages.MessageField) and
                   issubclass(field.type, messages.Message)):

@@ -23,8 +23,9 @@ Public functions:
   decode_message: Merge from a dictionary in to a message.
 """
 
-__author__ = 'ryan@docalytics.com (Ryan Morlok)'
+__author__ = 'ryan.morlok@morlok.com (Ryan Morlok)'
 
+import sys
 import logging
 
 from . import messages
@@ -35,6 +36,13 @@ __all__ = [
     'decode_dictionary',
 ]
 
+if sys.version_info >= (3, 0, 0):
+    unicode = str
+    basestring = str
+    long = int
+
+    def cmp(a, b):
+        return (a > b) - (a < b)
 
 def __encode_value(value):
     if isinstance(value, messages.Enum):
@@ -125,7 +133,7 @@ def decode_dictionary(message_type, dictionary):
     """
     message = message_type()
     try:
-        for key, value in dictionary.iteritems():
+        for key, value in dictionary.items():
             try:
                 field = message.field_by_name(key)
             except KeyError:

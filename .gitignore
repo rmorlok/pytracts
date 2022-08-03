@@ -1,3 +1,8 @@
 *.pyc
 .idea
-
+dist
+pytracts.egg-info
+.tox
+.eggs
+**/.python-version
+build

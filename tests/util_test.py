@@ -21,12 +21,21 @@ from tests import test_util
 __author__ = 'rafek@google.com (Rafe Kaplan)'
 
 import datetime
-import new
 import random
 import sys
 import unittest
+import types
 
 from pytracts import util
+
+
+if sys.version_info >= (3, 0, 0):
+    unicode = str
+    basestring = str
+    long = int
+
+    def cmp(a, b):
+        return (a > b) - (a < b)
 
 
 class ModuleInterfaceTest(test_util.ModuleInterfaceTest,
@@ -36,13 +45,13 @@ class ModuleInterfaceTest(test_util.ModuleInterfaceTest,
 
 class PadStringTest(test_util.TestCase):
     def testPadEmptyString(self):
-        self.assertEquals(' ' * 512, util.pad_string(''))
+        self.assertEqual(' ' * 512, util.pad_string(''))
 
     def testPadString(self):
-        self.assertEquals('hello' + (507 * ' '), util.pad_string('hello'))
+        self.assertEqual('hello' + (507 * ' '), util.pad_string('hello'))
 
     def testPadLongString(self):
-        self.assertEquals('x' * 1000, util.pad_string('x' * 1000))
+        self.assertEqual('x' * 1000, util.pad_string('x' * 1000))
 
 
 class UtilTest(test_util.TestCase):
@@ -51,8 +60,8 @@ class UtilTest(test_util.TestCase):
         def fn(kwonly=1):
             return [kwonly]
 
-        self.assertEquals([1], fn())
-        self.assertEquals([2], fn(kwonly=2))
+        self.assertEqual([1], fn())
+        self.assertEqual([2], fn(kwonly=2))
         self.assertRaisesWithRegexpMatch(TypeError,
                                          r'fn\(\) takes at most 0 positional '
                                          r'arguments \(1 given\)',
@@ -63,8 +72,8 @@ class UtilTest(test_util.TestCase):
         def fn(pos, kwonly=1):
             return [pos, kwonly]
 
-        self.assertEquals([1, 1], fn(1))
-        self.assertEquals([2, 2], fn(2, kwonly=2))
+        self.assertEqual([1, 1], fn(1))
+        self.assertEqual([2, 2], fn(2, kwonly=2))
         self.assertRaisesWithRegexpMatch(TypeError,
                                          r'fn\(\) takes at most 1 positional '
                                          r'argument \(2 given\)',
@@ -75,9 +84,9 @@ class UtilTest(test_util.TestCase):
         def fn(pos1, pos2=1, kwonly=1):
             return [pos1, pos2, kwonly]
 
-        self.assertEquals([1, 1, 1], fn(1))
-        self.assertEquals([2, 2, 1], fn(2, 2))
-        self.assertEquals([2, 3, 4], fn(2, 3, kwonly=4))
+        self.assertEqual([1, 1, 1], fn(1))
+        self.assertEqual([2, 2, 1], fn(2, 2))
+        self.assertEqual([2, 3, 4], fn(2, 3, kwonly=4))
         self.assertRaisesWithRegexpMatch(TypeError,
                                          r'fn\(\) takes at most 2 positional '
                                          r'arguments \(3 given\)',
@@ -89,8 +98,8 @@ class UtilTest(test_util.TestCase):
             def meth(self, pos1, kwonly=1):
                 return [pos1, kwonly]
 
-        self.assertEquals([1, 1], MyClass().meth(1))
-        self.assertEquals([2, 2], MyClass().meth(2, kwonly=2))
+        self.assertEqual([1, 1], MyClass().meth(1))
+        self.assertEqual([2, 2], MyClass().meth(2, kwonly=2))
         self.assertRaisesWithRegexpMatch(TypeError,
                                          r'meth\(\) takes at most 2 positional '
                                          r'arguments \(3 given\)',
@@ -99,11 +108,11 @@ class UtilTest(test_util.TestCase):
 
 class AcceptItemTest(test_util.TestCase):
     def CheckAttributes(self, item, main_type, sub_type, q=1, values={}, index=1):
-        self.assertEquals(index, item.index)
-        self.assertEquals(main_type, item.main_type)
-        self.assertEquals(sub_type, item.sub_type)
-        self.assertEquals(q, item.q)
-        self.assertEquals(values, item.values)
+        self.assertEqual(index, item.index)
+        self.assertEqual(main_type, item.main_type)
+        self.assertEqual(sub_type, item.sub_type)
+        self.assertEqual(q, item.q)
+        self.assertEqual(values, item.values)
 
     def testParse(self):
         self.CheckAttributes(util.AcceptItem('*/*', 1), None, None)
@@ -131,13 +140,13 @@ class AcceptItemTest(test_util.TestCase):
 
     def testSortKey(self):
         item = util.AcceptItem('main/sub; q=0.2; level=3', 11)
-        self.assertEquals((False, False, -0.2, False, 11), item.sort_key)
+        self.assertEqual((False, False, -0.2, False, 11), item.sort_key)
 
         item = util.AcceptItem('main/*', 12)
-        self.assertEquals((False, True, -1, True, 12), item.sort_key)
+        self.assertEqual((False, True, -1, True, 12), item.sort_key)
 
         item = util.AcceptItem('*/*', 1)
-        self.assertEquals((True, True, -1, True, 1), item.sort_key)
+        self.assertEqual((True, True, -1, True, 1), item.sort_key)
 
     def testSort(self):
         i1 = util.AcceptItem('text/*', 1)
@@ -149,7 +158,7 @@ class AcceptItemTest(test_util.TestCase):
         i7 = util.AcceptItem('*/*', 7)
         items = [i1, i2, i3, i4, i5, i6, i7]
         random.shuffle(items)
-        self.assertEquals([i6, i2, i5, i3, i4, i1, i7], sorted(items))
+        self.assertEqual([i6, i2, i5, i3, i4, i1, i7], sorted(items))
 
     def testMatchAll(self):
         item = util.AcceptItem('*/*', 1)
@@ -188,16 +197,16 @@ class AcceptItemTest(test_util.TestCase):
             str(util.AcceptItem('text/plain; level=1; q=0.2', 1)))
 
     def testRepr(self):
-        self.assertEquals("AcceptItem('*/*', 1)", repr(util.AcceptItem('*/*', 1)))
-        self.assertEquals("AcceptItem('text/plain', 11)",
+        self.assertEqual("AcceptItem('*/*', 1)", repr(util.AcceptItem('*/*', 1)))
+        self.assertEqual("AcceptItem('text/plain', 11)",
                           repr(util.AcceptItem('text/plain', 11)))
 
     def testValues(self):
         item = util.AcceptItem('text/plain; a=1; b=2; c=3;', 1)
         values = item.values
-        self.assertEquals(dict(a="1", b="2", c="3"), values)
+        self.assertEqual(dict(a="1", b="2", c="3"), values)
         values['a'] = "7"
-        self.assertNotEquals(values, item.values)
+        self.assertNotEqual(values, item.values)
 
 
 class ParseAcceptHeaderTest(test_util.TestCase):
@@ -206,13 +215,13 @@ class ParseAcceptHeaderTest(test_util.TestCase):
                        text/xml,
                        text/html; level=1, */*"""
         accepts = util.parse_accept_header(accept_header)
-        self.assertEquals(6, len(accepts))
-        self.assertEquals([4, 1, 3, 2, 0, 5], [a.index for a in accepts])
+        self.assertEqual(6, len(accepts))
+        self.assertEqual([4, 1, 3, 2, 0, 5], [a.index for a in accepts])
 
 
 class ChooseContentTypeTest(test_util.TestCase):
     def testIgnoreUnrequested(self):
-        self.assertEquals('application/json',
+        self.assertEqual('application/json',
                           util.choose_content_type(
                               'text/plain, application/json, */*',
                               ['application/X-Google-protobuf',
@@ -220,7 +229,7 @@ class ChooseContentTypeTest(test_util.TestCase):
                               ]))
 
     def testUseCorrectPreferenceIndex(self):
-        self.assertEquals('application/json',
+        self.assertEqual('application/json',
                           util.choose_content_type(
                               '*/*, text/plain, application/json',
                               ['application/X-Google-protobuf',
@@ -228,7 +237,7 @@ class ChooseContentTypeTest(test_util.TestCase):
                               ]))
 
     def testPreferFirstInList(self):
-        self.assertEquals('application/X-Google-protobuf',
+        self.assertEqual('application/X-Google-protobuf',
                           util.choose_content_type(
                               '*/*',
                               ['application/X-Google-protobuf',
@@ -236,7 +245,7 @@ class ChooseContentTypeTest(test_util.TestCase):
                               ]))
 
     def testCaseInsensitive(self):
-        self.assertEquals('application/X-Google-protobuf',
+        self.assertEqual('application/X-Google-protobuf',
                           util.choose_content_type(
                               'application/x-google-protobuf',
                               ['application/X-Google-protobuf',
@@ -255,12 +264,12 @@ class GetPackageForModuleTest(test_util.TestCase):
     def CreateModule(self, name, file_name=None):
         if file_name is None:
             file_name = '%s.py' % name
-        module = new.module(name)
+        module = types.ModuleType(name)
         sys.modules[name] = module
         return module
 
     def assertPackageEquals(self, expected, actual):
-        self.assertEquals(expected, actual)
+        self.assertEqual(expected, actual)
         if actual is not None:
             self.assertTrue(isinstance(actual, unicode))
 
@@ -312,7 +321,7 @@ class DateTimeTests(test_util.TestCase):
                 ('2012-09-30T15:31:50', (2012, 9, 30, 15, 31, 50, 0))):
             decoded = util.decode_datetime(datetime_string)
             expected = datetime.datetime(*datetime_vals)
-            self.assertEquals(expected, decoded)
+            self.assertEqual(expected, decoded)
 
     def testDateTimeTimeZones(self):
         """Test that a datetime string with a timezone is decoded correctly."""
@@ -333,7 +342,7 @@ class DateTimeTests(test_util.TestCase):
                  (2012, 9, 30, 15, 31, 50, 0, util.TimeZoneOffset(-1380)))):
             decoded = util.decode_datetime(datetime_string)
             expected = datetime.datetime(*datetime_vals)
-            self.assertEquals(expected, decoded)
+            self.assertEqual(expected, decoded)
 
     def testDecodeDateTimeInvalid(self):
         """Test that decoding malformed datetime strings raises execptions."""
