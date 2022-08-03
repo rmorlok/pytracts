@@ -23,7 +23,7 @@ Public functions:
   decode_message: Merge from a dictionary in to a message.
 """
 
-__author__ = 'ryan@morlok.com (Ryan Morlok)'
+__author__ = 'ryan.morlok@morlok.com (Ryan Morlok)'
 
 import sys
 import logging

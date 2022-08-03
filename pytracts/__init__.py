@@ -21,7 +21,7 @@
 
 from pytracts import to_json, messages, to_url, message_types, util, query, exceptions
 
-__author__ = 'Ryan Morlok (ryan@morlok.com)'
+__author__ = 'Ryan Morlok (ryan.morlok@morlok.com)'
 __version__ = '2.0'
 
 __ALL__ = [

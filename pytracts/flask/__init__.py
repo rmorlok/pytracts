@@ -19,7 +19,7 @@
 
 """Main module for pytracts package."""
 
-__author__ = 'Ryan Morlok (ryan@morlok.com)'
+__author__ = 'Ryan Morlok (ryan.morlok@morlok.com)'
 
 import sys
 import logging
