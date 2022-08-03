@@ -100,72 +100,64 @@ print to_json.encode_message(bob)
 #=> {"metadata": {"weight": 180, "height": 72}, "email": "bob@example.com", "name": "Bob"}
 ```
 
-## Annotate Webapp2 Handlers for JSON serialization
+## Annotate Flask Handlers for JSON serialization
 
 ```python
-import webapp2
+from flask import Flask, url_for
+import werkzeug
 
-from pytracts import messages, webapp2 as pt
+from pytracts import messages, flask as pt
 
 class TeamMessage(messages.Message):
+    id = messages.StringField()
     name = messages.StringField()
     colors = messages.StringField(repeated=True)
     mascot = messages.StringField()
 
-    
+
 class TeamsResponseMessage(messages.Message):
     page = messages.IntegerField()
-    teams = messages.MessageField(TeamMessage)
-
-gophers = TeamMessage(name='Minnesota', colors=['maroon', 'gold'], mascot='Goldy Gopher')
-badgers = TeamMessage(name='Wisconsin', colors=['cardinal', 'gold'], masot='Bucky Badger')
+    teams = messages.MessageField(TeamMessage, repeated=True)
 
 
-class TeamHandler(webapp2.RequestHandler):
-    
-    # Annotate endpoints to automatically serialize to JSON
-    @pt.endpoint
-    def get_teams(self):
-        
-        response = TeamsResponseMessage()
-        response.page = 1
-        response.teams = [gophers, badgers]
+gophers = TeamMessage(id='gophers', name='Minnesota', colors=['maroon', 'gold'], mascot='Goldy Gopher')
+badgers = TeamMessage(id='badgers', name='Wisconsin', colors=['cardinal', 'gold'], mascot='Bucky Badger')
+teams = dict([(t.id, t) for t in [gophers, badgers]])
 
-        return response
+# Annotate endpoints to automatically serialize to JSON
+@pt.endpoint('/v1/teams')
+def get_teams():
 
-    # Use Webapp2 exceptions for other status codes
-    @pt.endpoint
-    def get_team(self, team_id):
-        if team_id == 'gophers':
-            return gophers
-        elif team_id == 'badgers':
-            return badgers
-        else:
-            raise webapp2.exc.HTTPNotFound()
-    
-    # Take a message from the JSON body of the request
-    @pt.endpoint(team_details=TeamMessage)
-    def create_team(self, team_details):
-        # Create the team based on details 
+    response = TeamsResponseMessage()
+    response.page = 1
+    response.teams = list(teams.values())
 
-        # Return 201 status with a location header
-        return 201, {'Location': webapp2.uri_for('get_team', team_id='new-team-id')}
+    return response
 
-app = webapp2.WSGIApplication([
-    webapp2.Route(r'/v1/teams',             
-                  methods=['GET'],    
-                  handler='example.TeamHandler:get_teams',       
-                  name='get_teams'),
-    webapp2.Route(r'/v1/teams',             
-                  methods=['POST'],   
-                  handler='example.TeamHandler:create_team',     
-                  name='create_team'),
-    webapp2.Route(r'/v1/teams/<team_id>',   
-                  methods=['GET'],    
-                  handler='example.TeamHandler:get_team',        
-                  name='get_team')
-], debug=True)
+# Use Webapp2 exceptions for other status codes
+@pt.endpoint('/v1/teams/<team_id>')
+def get_team(team_id):
+    if team_id in teams:
+        return teams[team_id]
+    else:
+        raise werkzeug.exceptions.NotFound(f'Team {team_id} not found')
+
+# Take a message from the JSON body of the request
+@pt.endpoint('/v1/teams', methods=['POST'], body={'team_details': TeamMessage})
+def create_team(team_details):
+    # Create the team based on details
+    if team_details.id in teams:
+        raise werkzeug.exceptions.Forbidden(f'Team {team_details.id} already exists')
+
+    teams[team_details.id] = team_details
+    # Return 201 status with a location header
+    return 201, {'Location': url_for('get_team', team_id=team_details.id)}
+
+app = Flask(__name__)
+pt.register_endpoints(app)
 ```
+
+See [full sample app](./samples/flask/README.md) for more details.
 
 # PATCH support
 
